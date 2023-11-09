@@ -6,8 +6,8 @@
 #include "../error/error.h"
 
 extern const char* GLOBAL_IP;
-extern int CLIENT_LISTEN_PORT;
-extern int SS_LISTEN_PORT;
+extern const int CLIENT_LISTEN_PORT;
+extern const int SS_LISTEN_PORT;
 
 ErrorCode createPassiveSocket(int* sockfd, int port);
 ErrorCode createActiveSocket(int* sockfd);
@@ -28,4 +28,9 @@ ErrorCode socketSend(int sockfd, void* dataPtr, size_t bytes);
     Does not print error message in case of FAILURE
 */
 ErrorCode socketRecieve(int sockfd, void* dataPtr, size_t bytes);
+
+/*
+    Does not print error message in case of FAILURE
+*/
+ErrorCode closeSocket(int sockfd);
 #endif

@@ -3,10 +3,11 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 const char* GLOBAL_IP = "127.0.0.1";
-int CLIENT_LISTEN_PORT = 9459;
-int SS_LISTEN_PORT = 11764;
+const int CLIENT_LISTEN_PORT = 9459;
+const int SS_LISTEN_PORT = 11764;
 
 #define MAX_CONNECTION_IN_QUEUE 10
 
@@ -83,6 +84,14 @@ ErrorCode socketSend(int sockfd, void* dataPtr, size_t bytes) {
 
 ErrorCode socketRecieve(int sockfd, void* dataPtr, size_t bytes) {
     if (recv(sockfd, dataPtr, bytes, 0) == -1) {
+        return FAILURE;
+    }
+
+    return SUCCESS;
+}
+
+ErrorCode closeSocket(int sockfd) {
+    if (close(sockfd) == -1) {
         return FAILURE;
     }
 
