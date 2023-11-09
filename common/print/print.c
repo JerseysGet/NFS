@@ -1,4 +1,5 @@
 #include "print.h"
+#include "colors.h"
 
 #include <stdarg.h>
 

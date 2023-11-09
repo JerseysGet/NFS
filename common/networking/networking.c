@@ -4,9 +4,9 @@
 #include <errno.h>
 #include <string.h>
 
-extern const char* GLOBAL_IP = "127.0.0.1";
-extern int CLIENT_LISTEN_PORT = 9459;
-extern int SS_LISTEN_PORT = 11764;
+const char* GLOBAL_IP = "127.0.0.1";
+int CLIENT_LISTEN_PORT = 9459;
+int SS_LISTEN_PORT = 11764;
 
 #define MAX_CONNECTION_IN_QUEUE 10
 
@@ -28,7 +28,7 @@ ErrorCode createPassiveSocket(int* sockfd, int port) {
         return FAILURE;
     }
 
-    if (listen(sockfd, MAX_CONNECTION_IN_QUEUE) == -1) {
+    if (listen(*sockfd, MAX_CONNECTION_IN_QUEUE) == -1) {
         eprintf("Could not listen() on port %d, errno = %d, %s\n", port, errno, strerror(errno));
         return FAILURE;
     }
@@ -65,7 +65,7 @@ ErrorCode acceptClient(int serverSockfd, int* clientSockfd) {
     struct sockaddr_in clientAddr;
     socklen_t clientAddrLen;
     clientAddrLen = sizeof(clientAddr);
-    *clientSockfd = accept(serverSockfd, (struct sockarr*)&clientAddr, &clientAddrLen);
+    *clientSockfd = accept(serverSockfd, (struct sockaddr*)&clientAddr, &clientAddrLen);
     if (*clientSockfd == -1) {
         return FAILURE;
     }
@@ -77,10 +77,14 @@ ErrorCode socketSend(int sockfd, void* dataPtr, size_t bytes) {
     if (send(sockfd, dataPtr, bytes, 0) == -1) {
         return FAILURE;
     }
+
+    return SUCCESS;
 }
 
 ErrorCode socketRecieve(int sockfd, void* dataPtr, size_t bytes) {
     if (recv(sockfd, dataPtr, bytes, 0) == -1) {
         return FAILURE;
     }
+
+    return SUCCESS;
 }
