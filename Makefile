@@ -13,21 +13,34 @@ DEBUG_FLAGS = -fsanitize=address,undefined,pointer-compare
 DEBUG_FLAGS += -ggdb3
 DEBUG_FLAGS += -ftrapv
 DEBUG_FLAGS += -fstack-protector
-DEBUG_FLAGS += -DDebug
+DEBUG_FLAGS += -DDEBUG
 
 BUILD_FLAGS = -O2
 
-COMMON_OBJECTS = common/error/error.o common/networking/networking.o common/print/print.o
+COMMON_OBJECTS = common/error/error.o common/networking/networking.o common/print/print.o common/networking/nm_ss/ss_connect.o
 
 NM_OBJECTS = 
 SS_OBJECTS =
 CLIENT_OBJECTS =
 
-naming_server: naming_server.out
+nm: naming_server.out
 	./naming_server.out
 
-naming_server.out: $(COMMON_OBJECTS)
+ss: storage_server.out
+	./storage_server.out
+
+client: client.out
+	./client.out
+
+
+naming_server.out: $(COMMON_OBJECTS) $(NM_OBJECTS)
 	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(NM_OBJECTS) naming_server/naming_server.c -o $@
+
+storage_server.out: $(COMMON_OBJECTS) $(SS_OBJECTS)
+	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(SS_OBJECTS) storage_server/storage_server.c -o $@
+
+client.out: $(COMMON_OBJECTS) $(CLIENT_OBJECTS)
+	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(CLIENT_OBJECTS) storage_server/storage_server.c -o $@
 
 %.o:%.c
 	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
