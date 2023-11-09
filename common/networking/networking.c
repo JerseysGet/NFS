@@ -98,13 +98,15 @@ ErrorCode closeSocket(int sockfd) {
     return SUCCESS;
 }
 
-ErrorCode getPort(int sockfd) {
+ErrorCode getPort(int sockfd, int* port) {
     struct sockaddr_in socketAddr;
     socklen_t socketAddrLen = sizeof(socketAddr);
     if (getsockname(sockfd, (struct sockaddr*)&socketAddr, &socketAddrLen) == -1) {
         eprintf("Could not getsockname() on sockfd = %d, errno = %d, %s\n", sockfd, errno, strerror(errno));
         return FAILURE;
     }
+
+    *port = socketAddr.sin_port;
 
     return SUCCESS;
 }

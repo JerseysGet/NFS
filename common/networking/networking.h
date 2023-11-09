@@ -37,5 +37,5 @@ ErrorCode socketRecieve(int sockfd, void* dataPtr, size_t bytes);
 */
 ErrorCode closeSocket(int sockfd);
 
-ErrorCode getPort(int sockfd);
+ErrorCode getPort(int sockfd, int* port);
 #endif
