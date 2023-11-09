@@ -97,3 +97,14 @@ ErrorCode closeSocket(int sockfd) {
 
     return SUCCESS;
 }
+
+ErrorCode getPort(int sockfd) {
+    struct sockaddr_in socketAddr;
+    socklen_t socketAddrLen = sizeof(socketAddr);
+    if (getsockname(sockfd, (struct sockaddr*)&socketAddr, &socketAddrLen) == -1) {
+        eprintf("Could not getsockname() on sockfd = %d, errno = %d, %s\n", sockfd, errno, strerror(errno));
+        return FAILURE;
+    }
+
+    return SUCCESS;
+}

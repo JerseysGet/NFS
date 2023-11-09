@@ -9,6 +9,9 @@ extern const char* GLOBAL_IP;
 extern const int CLIENT_LISTEN_PORT;
 extern const int SS_LISTEN_PORT;
 
+/*
+    Passing port as 0 creates a passive socket on a random port
+*/
 ErrorCode createPassiveSocket(int* sockfd, int port);
 ErrorCode createActiveSocket(int* sockfd);
 
@@ -33,4 +36,6 @@ ErrorCode socketRecieve(int sockfd, void* dataPtr, size_t bytes);
     Does not print error message in case of FAILURE
 */
 ErrorCode closeSocket(int sockfd);
+
+ErrorCode getPort(int sockfd);
 #endif
