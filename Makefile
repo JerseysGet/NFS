@@ -19,11 +19,15 @@ BUILD_FLAGS = -O2
 
 COMMON_OBJECTS = common/error/error.o common/networking/networking.o common/print/print.o
 
+NM_OBJECTS = 
+SS_OBJECTS =
+CLIENT_OBJECTS =
+
 naming_server: naming_server.out
-	@./naming_server.out
+	./naming_server.out
 
 naming_server.out: $(COMMON_OBJECTS)
-	$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) naming_server/naming_server.c -o $@
+	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(NM_OBJECTS) naming_server/naming_server.c -o $@
 
 %.o:%.c
 	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
