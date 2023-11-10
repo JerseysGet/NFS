@@ -25,6 +25,7 @@ COMMON_OBJECTS += common/networking/nm_ss/ss_connect.o
 
 NM_OBJECTS = naming_server/naming_server.o
 NM_OBJECTS += naming_server/threads/ss_listener_thread.o
+NM_OBJECTS += naming_server/threads/ss_alive_thread.o
 
 SS_OBJECTS = storage_server/storage_server.c
 

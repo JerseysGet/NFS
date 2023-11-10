@@ -1,9 +1,8 @@
 #include "ss_listener_thread.h"
 
 #include "../../common/networking/networking.h"
-#include "../naming_server.h"
 
-/* Terminates in case of fatal errors */
+/* Terminates naming server in case of fatal errors */
 void* ssListenerRoutine(void* arg) {
     UNUSED(arg);
     ConnectedSS* connectedSS = &namingServer.connectedSS;
@@ -20,12 +19,15 @@ void* ssListenerRoutine(void* arg) {
         for (int i = 0; i < recievedReq->paths.count; i++) {
             LOG("\t%s\n", recievedReq->paths.pathList[i]);
         }
+
+        pthread_mutex_lock(&namingServer.connectedSSLock);
         connectedSS->storageServerSockfds[connectedSS->count] = ssSockfd;
         connectedSS->count++;
         if (connectedSS->count > MAX_STORAGE_SERVERS) {
             eprintf("Too many storage servers\n");
             FATAL_EXIT;
         }
+        pthread_mutex_unlock(&namingServer.connectedSSLock);
     }
 }
 

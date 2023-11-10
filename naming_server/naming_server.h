@@ -7,6 +7,7 @@
 #include "../common/networking/nm_client/client_connect.h"
 #include "../common/networking/nm_ss/ss_connect.h"
 #include "../common/print/logging.h"
+#include "./threads/ss_alive_thread.h"
 #include "./threads/ss_listener_thread.h"
 
 extern FILE* logFile;
@@ -38,10 +39,16 @@ typedef struct ConnectedClients {
 } ConnectedClients;
 
 typedef struct NamingServer {
-    int ssListenerSockfd;            /* Socketfd for ss listener passive port */
+    int ssListenerSockfd;            /* Socket for ss listener passive port */
     ConnectedSS connectedSS;         /* Stores connected storage servers, must be locked for synchronization */
     pthread_mutex_t connectedSSLock; /* Lock for connectedSS */
     pthread_t ssListener;            /* Storage server listener thread */
+    pthread_t ssAliveChecker;        /* Checks if the connected ss's are alive */
+
+    int clientListenerSockfd;             /* Socket for client listener passive port */
+    ConnectedClients connectedClients;    /* Stores connected clients, must be locked for synchronization */
+    pthread_mutex_t connectedClientsLock; /* Lock for connectedClients */
+    pthread_t clientListener;             /* Client listener thread */
 } NamingServer;
 
 /* Unique naming server instance */

@@ -1,6 +1,7 @@
 #ifndef __NETWORKING_H
 #define __NETWORKING_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <unistd.h>
 
@@ -17,7 +18,7 @@ ErrorCode createPassiveSocket(int* sockfd, int port);
 ErrorCode createActiveSocket(int* sockfd);
 
 ErrorCode connectToServer(int clientSockfd, int serverPort);
-
+bool canConnectToServer(int clientSockfd, int serverPort);
 /*
     Does not print error message in case of FAILURE
 */

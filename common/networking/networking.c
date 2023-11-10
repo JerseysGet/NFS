@@ -57,8 +57,22 @@ ErrorCode connectToServer(int clientSockfd, int serverPort) {
         eprintf("Could not connect to port %d, errno = %d, %s\n", serverPort, errno, strerror(errno));
         return FAILURE;
     }
-
+    
     return SUCCESS;
+}
+
+bool canConnectToServer(int clientSockfd, int serverPort) {
+    struct sockaddr_in serverAddr;
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = serverPort;
+    serverAddr.sin_addr.s_addr = inet_addr(GLOBAL_IP);
+
+    if (connect(clientSockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1) {
+        return false;
+    }
+    
+    return true;
 }
 
 ErrorCode acceptClient(int serverSockfd, int* clientSockfd) {
