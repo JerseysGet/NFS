@@ -1,6 +1,6 @@
 #include "ss_listener_thread.h"
 
-#include "../../common/networking/networking.h"
+#include "../../../common/networking/networking.h"
 
 /* Terminates naming server in case of fatal errors */
 void* ssListenerRoutine(void* arg) {

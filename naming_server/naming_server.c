@@ -35,14 +35,21 @@ ErrorCode initNM() {
         return FAILURE;
     }
     LOG("Initializing naming server\n");
+    
     if (initConnectedSS()) return FAILURE;
-    LOG("Creating passive socket for naming server on port = %d\n", SS_LISTEN_PORT);
+    LOG("Creating passive socket (ss listener) on port = %d\n", SS_LISTEN_PORT);
     if (createPassiveSocket(&namingServer.ssListenerSockfd, SS_LISTEN_PORT)) return FAILURE;
+
+    if (initConnectedClients()) return FAILURE;
+    LOG("Creating passive socket (client listener) on port = %d\n", CLIENT_LISTEN_PORT);
+    if (createPassiveSocket(&namingServer.clientListenerSockfd, CLIENT_LISTEN_PORT)) return FAILURE;
+
     return SUCCESS;
 }
 
 void destroyNM() {
     fclose(logFile);
     pthread_mutex_destroy(&namingServer.connectedSSLock);
+    pthread_mutex_destroy(&namingServer.connectedClientsLock);
     close(namingServer.ssListenerSockfd);
 }

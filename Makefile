@@ -22,14 +22,16 @@ COMMON_OBJECTS += common/networking/networking.o
 COMMON_OBJECTS += common/print/print.o 
 COMMON_OBJECTS += common/print/logging.o
 COMMON_OBJECTS += common/networking/nm_ss/ss_connect.o
+COMMON_OBJECTS += common/networking/nm_client/client_connect.o
 
 NM_OBJECTS = naming_server/naming_server.o
-NM_OBJECTS += naming_server/threads/ss_listener_thread.o
-NM_OBJECTS += naming_server/threads/ss_alive_thread.o
+NM_OBJECTS += naming_server/threads/for_ss/ss_listener_thread.o
+NM_OBJECTS += naming_server/threads/for_ss/ss_alive_thread.o
+NM_OBJECTS += naming_server/threads/for_client/client_listener_thread.o
 
 SS_OBJECTS = storage_server/storage_server.c
 
-CLIENT_OBJECTS =
+CLIENT_OBJECTS = client/client.c
 
 nm: naming_server.out
 	./naming_server.out
@@ -48,13 +50,15 @@ storage_server.out: $(COMMON_OBJECTS) $(SS_OBJECTS)
 	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(SS_OBJECTS) storage_server/main.c -o $@
 
 client.out: $(COMMON_OBJECTS) $(CLIENT_OBJECTS)
-	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(CLIENT_OBJECTS) storage_server/main.c -o $@
+	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(CLIENT_OBJECTS) client/main.c -o $@
 
 %.o:%.c
-	$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
+	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
+
+clean_logs:
+	@find . -type f -iname \*.log -delete
 
 clean:
 	@find . -type f -iname \*.out -delete
 	@find . -type f -iname \*.o -delete
 	@find . -type f -iname \*.test -delete
-	@find . -type f -iname \*.log -delete

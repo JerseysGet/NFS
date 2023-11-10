@@ -3,8 +3,8 @@
 
 #include <pthread.h>
 
-#include "../../common/networking/nm_client/client_connect.h"
-#include "../naming_server.h"
+#include "../../../common/networking/nm_client/client_connect.h"
+#include "../../naming_server.h"
 
 ErrorCode createSSAliveThread(pthread_t* aliveThread);
 

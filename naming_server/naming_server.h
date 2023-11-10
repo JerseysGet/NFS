@@ -7,8 +7,10 @@
 #include "../common/networking/nm_client/client_connect.h"
 #include "../common/networking/nm_ss/ss_connect.h"
 #include "../common/print/logging.h"
-#include "./threads/ss_alive_thread.h"
-#include "./threads/ss_listener_thread.h"
+#include "./threads/for_client/client_alive_thread.h"
+#include "./threads/for_client/client_listener_thread.h"
+#include "./threads/for_ss/ss_alive_thread.h"
+#include "./threads/for_ss/ss_listener_thread.h"
 
 extern FILE* logFile;
 
@@ -49,6 +51,7 @@ typedef struct NamingServer {
     ConnectedClients connectedClients;    /* Stores connected clients, must be locked for synchronization */
     pthread_mutex_t connectedClientsLock; /* Lock for connectedClients */
     pthread_t clientListener;             /* Client listener thread */
+    pthread_t clientAliveChecker;         /* Checks if connected clients are alive */
 } NamingServer;
 
 /* Unique naming server instance */

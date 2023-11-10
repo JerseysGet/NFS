@@ -25,11 +25,11 @@ ErrorCode initClient(Client* client){
         return FAILURE;
     } else {
         LOG("Getting port for Client's Passive Socket\n");
-        if (getPort(client->aliveSockfd, &client->passiveSockPort))
+        if (getPort(client->passiveSockfd, &client->passiveSockPort))
             return FAILURE;
     }
     LOG("Creating Active Socket for Client's NM Socket\n");
-    if (createPassiveSocket(&client->nmSockfd, 0))
+    if (createActiveSocket(&client->nmSockfd))
         return FAILURE;
     
     return SUCCESS;

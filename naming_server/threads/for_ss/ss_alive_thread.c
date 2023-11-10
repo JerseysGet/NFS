@@ -1,6 +1,6 @@
 #include "ss_alive_thread.h"
 
-#include "../../common/networking/networking.h"
+#include "../../../common/networking/networking.h"
 
 /* Terminates naming server in case of fatal errors */
 void* ssAliveRoutine(void* arg) {
@@ -22,19 +22,18 @@ void* ssAliveRoutine(void* arg) {
             if (!canConnectToServer(tempSockfd, ssAlivePort)) {
                 LOG("Storage server with alive port %d disconnected\n", ssAlivePort);
                 toRemoveIndices[toRemoveCount++] = i;
-            } 
+            }
 
             if (closeSocket(tempSockfd)) {
                 eprintf("Could not close socket\n");
                 FATAL_EXIT;
             }
-
         }
 
         int newSSCount = 0;
         int ptr = 0;
         for (int i = 0; i < connectedSS->count; i++) {
-            if (ptr < toRemoveCount && i == toRemoveIndices[ptr]) { // ignore i
+            if (ptr < toRemoveCount && i == toRemoveIndices[ptr]) {  // ignore i
                 ptr++;
             } else {
                 connectedSS->storageServers[newSSCount] = connectedSS->storageServers[i];
