@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "../common/error/error.h"
+#include "../common/networking/nm_client/client_connect.h"
 #include "../common/networking/nm_ss/ss_connect.h"
 #include "../common/print/logging.h"
 #include "./threads/ss_listener_thread.h"
@@ -22,11 +23,19 @@ extern FILE* logFile;
     } while (0);
 
 #define MAX_STORAGE_SERVERS 100
+#define MAX_CLIENTS 100
+
 typedef struct ConnectedSS {
     int count;
     SSInitRequest storageServers[MAX_STORAGE_SERVERS];
     int storageServerSockfds[MAX_STORAGE_SERVERS];
 } ConnectedSS;
+
+typedef struct ConnectedClients {
+    int count;
+    ClientInitRequest clients[MAX_CLIENTS];
+    int clientSockfds[MAX_CLIENTS];
+} ConnectedClients;
 
 typedef struct NamingServer {
     int ssListenerSockfd;            /* Socketfd for ss listener passive port */

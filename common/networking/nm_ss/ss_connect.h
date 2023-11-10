@@ -18,7 +18,6 @@ typedef struct SSInitRequest {
     AccessiblePaths paths;
 } SSInitRequest;
 
-// TODO 
 ErrorCode sendSSRequest(int nmSockfd, SSInitRequest* req);
 ErrorCode recieveSSRequest(int ssListenSockfd,SSInitRequest* req);
 
