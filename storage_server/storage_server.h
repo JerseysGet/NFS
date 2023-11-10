@@ -1,7 +1,10 @@
 #ifndef __STORAGE_SERVER_H
 #define __STORAGE_SERVER_H
 
+#include <stdio.h>
+
 #include "../common/error/error.h"
+#include "../common/networking/networking.h"
 #include "../common/networking/nm_ss/ss_connect.h"
 
 extern FILE* logFile;

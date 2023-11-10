@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "../common/print/logging.h"
-#include "../networking/networking.h"
+#include "../common/networking/networking.h"
 
 FILE* logFile;
 
@@ -16,7 +16,7 @@ ErrorCode initSS(StorageServer* ss) {
     if (createPassiveSocket(&ss->aliveSockfd, 0)) {
         return FAILURE;
     } else {
-        LOG("Getting port for SS's Alive Socket");
+        LOG("Getting port for SS's Alive Socket\n");
         if (getPort(ss->aliveSockfd, &ss->aliveSockPort))
             return FAILURE;
     }
@@ -24,7 +24,7 @@ ErrorCode initSS(StorageServer* ss) {
     if (createPassiveSocket(&ss->clientSockfd, 0)) {
         return FAILURE;
     } else {
-        LOG("Getting port for SS's Client Socket");
+        LOG("Getting port for SS's Client Socket\n");
         if (getPort(ss->clientSockfd, &ss->clientSockfd))
             return FAILURE;
     }
@@ -32,7 +32,7 @@ ErrorCode initSS(StorageServer* ss) {
     if (createPassiveSocket(&ss->passiveSockfd, 0)) {
         return FAILURE;
     } else {
-        LOG("Getting port for SS's Passive Socket");
+        LOG("Getting port for SS's Passive Socket\n");
         if (getPort(ss->passiveSockfd, &ss->passiveSockPort))
             return FAILURE;
     }

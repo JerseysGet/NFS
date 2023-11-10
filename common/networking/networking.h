@@ -6,9 +6,9 @@
 
 #include "../error/error.h"
 
-extern const char* GLOBAL_IP;
-extern const int CLIENT_LISTEN_PORT;
-extern const int SS_LISTEN_PORT;
+extern const char* GLOBAL_IP;        /* Local host 127.0.0.1 */
+extern const int CLIENT_LISTEN_PORT; /* Port on which the NM listens for clients */
+extern const int SS_LISTEN_PORT;     /* Port on which the NM listens for storage servers */
 
 /*
     Passing port as 0 creates a passive socket on a random port
