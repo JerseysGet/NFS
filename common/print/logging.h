@@ -18,7 +18,6 @@ extern char __LOG_BUFFER[LOG_BUFFER_SIZE];
     } while (0)
 #else
 #define LOG(...)                       \
-    printf("1\n");                     \
     do {                               \
         fprintf(logFile, __VA_ARGS__); \
     } while (0)
