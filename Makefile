@@ -20,8 +20,8 @@ BUILD_FLAGS = -O2
 COMMON_OBJECTS = common/error/error.o 
 COMMON_OBJECTS += common/networking/networking.o 
 COMMON_OBJECTS += common/print/print.o 
-COMMON_OBJECTS += common/networking/nm_ss/ss_connect.o
 COMMON_OBJECTS += common/print/logging.o
+COMMON_OBJECTS += common/networking/nm_ss/ss_connect.o
 
 NM_OBJECTS = naming_server/naming_server.o
 NM_OBJECTS += naming_server/threads/ss_listener_thread.o
@@ -50,7 +50,7 @@ client.out: $(COMMON_OBJECTS) $(CLIENT_OBJECTS)
 	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(CLIENT_OBJECTS) storage_server/main.c -o $@
 
 %.o:%.c
-	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
+	$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
 
 clean:
 	@find . -type f -iname \*.out -delete
