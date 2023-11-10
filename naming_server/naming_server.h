@@ -5,7 +5,10 @@
 
 #include "../common/error/error.h"
 #include "../common/networking/nm_ss/ss_connect.h"
+#include "../common/print/logging.h"
 #include "./threads/ss_listener_thread.h"
+
+extern FILE* logFile;
 
 #define FATAL_EXIT   \
     do {             \
@@ -13,7 +16,10 @@
         exit(1);     \
     } while (0)
 
-#define UNUSED(x) do {(void)x;} while(0);
+#define UNUSED(x) \
+    do {          \
+        (void)x;  \
+    } while (0);
 
 #define MAX_STORAGE_SERVERS 100
 typedef struct ConnectedSS {

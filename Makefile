@@ -21,6 +21,7 @@ COMMON_OBJECTS = common/error/error.o
 COMMON_OBJECTS += common/networking/networking.o 
 COMMON_OBJECTS += common/print/print.o 
 COMMON_OBJECTS += common/networking/nm_ss/ss_connect.o
+COMMON_OBJECTS += common/print/logging.o
 
 NM_OBJECTS = naming_server/naming_server.o
 NM_OBJECTS += naming_server/threads/ss_listener_thread.o
@@ -55,3 +56,4 @@ clean:
 	@find . -type f -iname \*.out -delete
 	@find . -type f -iname \*.o -delete
 	@find . -type f -iname \*.test -delete
+	@find . -type f -iname \*.log -delete

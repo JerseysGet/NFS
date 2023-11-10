@@ -3,8 +3,10 @@
 #include "../common/networking/networking.h"
 
 NamingServer namingServer;
+FILE* logFile;
 
 ErrorCode initNM() {
+    createLogFile(logFile, NM_LOGS);
     namingServer.connectedSS.count = 0;
     int ret;
     if ((ret = pthread_mutex_init(&namingServer.connectedSSLock, NULL))) {
@@ -16,6 +18,7 @@ ErrorCode initNM() {
 }
 
 void destroyNM() {
+    fclose(logFile);
     pthread_mutex_destroy(&namingServer.connectedSSLock);
     close(namingServer.ssListenerSockfd);
 }
