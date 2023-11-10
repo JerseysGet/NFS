@@ -1,61 +1,33 @@
 #include "storage_server.h"
 
-#define MAX_PATH_LENGTH 256
-struct SSInitRequest {
-    // Define the structure members 
-    int numPaths; // Replace 
-    int pathPorts[MAX_NUM_PATHS]; // Replace 
-};
+#include <stdio.h>
 
-int main() {
-    
-    int numPaths;
+ErrorCode initSS(StorageServer* ss) {
+    /*
+        TODO
+        1. initialize ss->aliveSockfd by creating passive socket
+        2. get ss->aliveSockPort with getPort()
+        3. initialize ss->clientSockfd by creating passive socket
+        4. get ss->aliveSockPort with getPort()
+        5. Call inputPaths()
+        6. initialize ss->nmSockfd by creating active socket
+    */
+    return SUCCESS;
+}
+
+void destroySS(StorageServer* ss) {
+    /*
+        TODO
+        close all sockfds
+    */
+}
+
+ErrorCode inputPaths(StorageServer* ss) {
     printf("Enter the number of paths: ");
-    scanf("%d", &numPaths);
-
-    
-    char paths[numPaths][MAX_PATH_LENGTH];
-    for (int i = 0; i < numPaths; i++) {
+    scanf("%d", &ss->paths.count);
+    for (int i = 0; i < ss->paths.count; i++) {
         printf("Enter path %d: ", i + 1);
-        scanf("%s", paths[i]);
+        scanf("%s", ss->paths.pathList[i]);
     }
-
-   
-    struct SSInitRequest initRequest;
-    initRequest.numPaths = numPaths;
-    for (int i = 0; i < numPaths; i++) {
-        
-        initRequest.pathPorts[i] = rand() % 65536;
-    }
-
-  
-    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_fd == -1) {
-        perror("Error creating socket");
-        exit(1);
-    }
-
-    
-    struct sockaddr_in server_addr;
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(SS_LISTEN_PORT);
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); // Replace with the actual server IP address
-
-    if (connect(socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
-        perror("Error connecting to server");
-        close(socket_fd);
-        exit(1);
-    }
-
-    
-    if (send(socket_fd, &initRequest, sizeof(initRequest), 0) == -1) {
-        perror("Error sending data");
-        close(socket_fd);
-        exit(1);
-    }
-
-    
-    close(socket_fd);
-    return 0;
+    return SUCCESS;
 }
