@@ -45,6 +45,7 @@ ErrorCode initSS(StorageServer* ss) {
 }
 
 void destroySS(StorageServer* ss) {
+    LOG("Closing all sockfds of SS\n");
     closeSocket(ss->aliveSockfd);
     closeSocket(ss->clientSockfd);
     closeSocket(ss->nmSockfd);

@@ -1,7 +1,9 @@
 #ifndef __CLIENT_H
 #define __CLIENT_H
+
 #include "../common/error/error.h"
 #include "../common/networking/networking.h"
+#include "../common/networking/nm_client/client_connect.h"
 
 typedef struct Client {
     int passiveSockfd;   /* Temporary */
@@ -11,7 +13,7 @@ typedef struct Client {
     int aliveSockPort;   /* Port for aliveSockfd */
 } Client;
 
-ErrorCode initClient(Client* ss);
-void destroyClient(Client* ss);
+ErrorCode initClient(Client* client);
+void destroyClient(Client* client);
 
 #endif
