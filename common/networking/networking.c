@@ -3,7 +3,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <string.h>
-#include <unistd.h>
 
 const char* GLOBAL_IP = "127.0.0.1";
 const int CLIENT_LISTEN_PORT = 9459;
