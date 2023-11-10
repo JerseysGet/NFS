@@ -2,24 +2,53 @@
 
 #include <stdio.h>
 
+#include "../common/print/logging.h"
+#include "../networking/networking.h"
+
+FILE* logFile;
+
 ErrorCode initSS(StorageServer* ss) {
-    /*
-        TODO
-        1. initialize ss->aliveSockfd by creating passive socket
-        2. get ss->aliveSockPort with getPort()
-        3. initialize ss->clientSockfd by creating passive socket
-        4. get ss->aliveSockPort with getPort()
-        5. Call inputPaths()
-        6. initialize ss->nmSockfd by creating active socket
-    */
+    if (createLogFile(&logFile, SS_LOGS)) {
+        eprintf("Could not create log file\n");
+        return FAILURE;
+    }
+    LOG("Creating Passive Socket for SS's Alive Socket\n");
+    if (createPassiveSocket(&ss->aliveSockfd, 0)) {
+        return FAILURE;
+    } else {
+        LOG("Getting port for SS's Alive Socket");
+        if (getPort(ss->aliveSockfd, &ss->aliveSockPort))
+            return FAILURE;
+    }
+    LOG("Creating Passive Socket for SS's Client Socket\n");
+    if (createPassiveSocket(&ss->clientSockfd, 0)) {
+        return FAILURE;
+    } else {
+        LOG("Getting port for SS's Client Socket");
+        if (getPort(ss->clientSockfd, &ss->clientSockfd))
+            return FAILURE;
+    }
+    LOG("Creating Passive Socket for SS's Passive Socket\n");
+    if (createPassiveSocket(&ss->passiveSockfd, 0)) {
+        return FAILURE;
+    } else {
+        LOG("Getting port for SS's Passive Socket");
+        if (getPort(ss->passiveSockfd, &ss->passiveSockPort))
+            return FAILURE;
+    }
+    inputPaths(ss);
+    LOG("Creating Active Socket for SS's NM Socket\n");
+    if (createActiveSocket(&ss->nmSockfd))
+        return FAILURE;
+
     return SUCCESS;
 }
 
 void destroySS(StorageServer* ss) {
-    /*
-        TODO
-        close all sockfds
-    */
+    closeSocket(ss->aliveSockfd);
+    closeSocket(ss->clientSockfd);
+    closeSocket(ss->nmSockfd);
+    fclose(logFile);
 }
 
 ErrorCode inputPaths(StorageServer* ss) {

@@ -19,7 +19,7 @@ typedef struct SSInitRequest {
 } SSInitRequest;
 
 // TODO 
-ErrorCode sendSSRequest(SSInitRequest* req);
-ErrorCode recieveSSRequest(SSInitRequest* req);
+ErrorCode sendSSRequest(int nmSockfd, SSInitRequest* req);
+ErrorCode recieveSSRequest(int ssListenSockfd,SSInitRequest* req);
 
 #endif
