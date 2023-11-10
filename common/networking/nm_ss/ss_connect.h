@@ -8,14 +8,18 @@
 
 typedef struct AccessiblePaths {
     int count;
-    char pathList[MAX_PATH_COUNT][MAX_PATH_LEN]; /* List of paths  */
+    char pathList[MAX_PATH_COUNT][MAX_PATH_LEN]; /* List of paths */
 } AccessiblePaths;
 
 typedef struct SSInitRequest {
     int SSPassivePort; /* NM will connect to SS on this port for communication */
-    int SSAlivePort;  /* NM will check if SS is alive on this port */ 
-    int SSClientPort; /* NM will store this port for communcation between SS and client */
+    int SSAlivePort;   /* NM will check if SS is alive on this port */
+    int SSClientPort;  /* NM will store this port for communcation between SS and client */
     AccessiblePaths paths;
 } SSInitRequest;
+
+// TODO 
+ErrorCode sendSSRequest(SSInitRequest* req);
+ErrorCode recieveSSRequest(SSInitRequest* req);
 
 #endif
