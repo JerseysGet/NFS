@@ -2,12 +2,12 @@
 
 #include <stdio.h>
 
-#include "../common/print/logging.h"
 #include "../common/networking/networking.h"
+#include "../common/print/logging.h"
 
 FILE* logFile;
 
-ErrorCode initClient(Client* client){
+ErrorCode initClient(Client* client) {
     if (createLogFile(&logFile, CLIENT_LOGS)) {
         eprintf("Could not create log file\n");
         return FAILURE;
@@ -31,10 +31,11 @@ ErrorCode initClient(Client* client){
     LOG("Creating Active Socket for Client's NM Socket\n");
     if (createActiveSocket(&client->nmSockfd))
         return FAILURE;
-    
+
     return SUCCESS;
 }
-void destroyClient(Client* client){
+
+void destroyClient(Client* client) {
     LOG("Closing all sockfds in Client\n");
     closeSocket(client->aliveSockfd);
     closeSocket(client->passiveSockfd);

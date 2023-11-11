@@ -11,16 +11,17 @@ void* ssListenerRoutine(void* arg) {
         int ssSockfd;
         if (acceptClient(namingServer.ssListenerSockfd, &ssSockfd)) FATAL_EXIT;
         LOG("Storage server connected\n");
-        if (recieveSSRequest(ssSockfd, &connectedSS->storageServers[connectedSS->count])) FATAL_EXIT;
-        SSInitRequest* recievedReq = &connectedSS->storageServers[connectedSS->count];
+        SSInitRequest recievedReq;
+        if (recieveSSRequest(ssSockfd, &recievedReq)) FATAL_EXIT;
         LOG("SSRequest recieved:\n");
-        LOG("Alive port = %d, Passive port = %d, Client port = %d\n", recievedReq->SSAlivePort, recievedReq->SSPassivePort, recievedReq->SSClientPort);
-        LOG("path count = %d\n", recievedReq->paths.count);
-        for (int i = 0; i < recievedReq->paths.count; i++) {
-            LOG("\t%s\n", recievedReq->paths.pathList[i]);
+        LOG("Alive port = %d, Passive port = %d, Client port = %d\n", recievedReq.SSAlivePort, recievedReq.SSPassivePort, recievedReq.SSClientPort);
+        LOG("path count = %d\n", recievedReq.paths.count);
+        for (int i = 0; i < recievedReq.paths.count; i++) {
+            LOG("\t%s\n", recievedReq.paths.pathList[i]);
         }
 
         pthread_mutex_lock(&namingServer.connectedSSLock);
+        connectedSS->storageServers[connectedSS->count] = recievedReq;
         connectedSS->storageServerSockfds[connectedSS->count] = ssSockfd;
         connectedSS->count++;
         if (connectedSS->count > MAX_STORAGE_SERVERS) {

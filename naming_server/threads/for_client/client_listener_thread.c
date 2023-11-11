@@ -10,13 +10,14 @@ void* clientListenerRoutine(void* arg) {
         LOG("Waiting for client...\n");
         int clientSockfd;
         if (acceptClient(namingServer.clientListenerSockfd, &clientSockfd)) FATAL_EXIT;
-        LOG("Storage server connected\n");
-        if (recieveClientRequest(clientSockfd, &connectedClients->clients[connectedClients->count])) FATAL_EXIT;
-        ClientInitRequest* recievedReq = &connectedClients->clients[connectedClients->count];
+        LOG("Client connected\n");
+        ClientInitRequest recievedReq;
+        if (recieveClientRequest(clientSockfd, &recievedReq)) FATAL_EXIT;
         LOG("ClientRequest recieved:\n");
-        LOG("Passive port = %d, Alive port = %d\n", recievedReq->clientPassivePort, recievedReq->clientAlivePort);
 
         pthread_mutex_lock(&namingServer.connectedClientsLock);
+        connectedClients->clients[connectedClients->count] = recievedReq;
+        LOG("Passive port = %d, Alive port = %d\n", recievedReq.clientPassivePort, recievedReq.clientAlivePort);
         connectedClients->clientSockfds[connectedClients->count] = clientSockfd;
         connectedClients->count++;
         if (connectedClients->count > MAX_CLIENTS) {

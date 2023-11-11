@@ -15,7 +15,7 @@ DEBUG_FLAGS += -ftrapv
 DEBUG_FLAGS += -fstack-protector
 DEBUG_FLAGS += -DDEBUG
 
-BUILD_FLAGS = -O2
+BUILD_FLAGS = -O0
 
 COMMON_OBJECTS = common/error/error.o 
 COMMON_OBJECTS += common/networking/networking.o 
@@ -28,6 +28,7 @@ NM_OBJECTS = naming_server/naming_server.o
 NM_OBJECTS += naming_server/threads/for_ss/ss_listener_thread.o
 NM_OBJECTS += naming_server/threads/for_ss/ss_alive_thread.o
 NM_OBJECTS += naming_server/threads/for_client/client_listener_thread.o
+NM_OBJECTS += naming_server/threads/for_client/client_alive_thread.o
 
 SS_OBJECTS = storage_server/storage_server.c
 

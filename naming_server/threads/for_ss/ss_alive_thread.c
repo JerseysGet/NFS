@@ -2,7 +2,7 @@
 
 #include "../../../common/networking/networking.h"
 
-/* Terminates naming server in case of fatal errors */
+/* Termicnates naming server in case of fatal errors */
 void* ssAliveRoutine(void* arg) {
     UNUSED(arg);
     ConnectedSS* connectedSS = &namingServer.connectedSS;
