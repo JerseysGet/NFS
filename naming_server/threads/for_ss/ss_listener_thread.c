@@ -7,17 +7,16 @@ void* ssListenerRoutine(void* arg) {
     UNUSED(arg);
     ConnectedSS* connectedSS = &namingServer.connectedSS;
     while (1) {
-        LOG("Waiting for storage server...\n");
+        lprintf("SS_listener : Waiting for storage server...");
         int ssSockfd;
         if (acceptClient(namingServer.ssListenerSockfd, &ssSockfd)) FATAL_EXIT;
-        LOG("Storage server connected\n");
+        lprintf("SS_listener : Storage server connected");
         SSInitRequest recievedReq;
         if (recieveSSRequest(ssSockfd, &recievedReq)) FATAL_EXIT;
-        LOG("SSRequest recieved:\n");
-        LOG("Alive port = %d, Passive port = %d, Client port = %d\n", recievedReq.SSAlivePort, recievedReq.SSPassivePort, recievedReq.SSClientPort);
-        LOG("path count = %d\n", recievedReq.paths.count);
+        lprintf("SS_listener : Recieved Alive port = %d, Passive port = %d, Client port = %d", recievedReq.SSAlivePort, recievedReq.SSPassivePort, recievedReq.SSClientPort);
+        printf("path count = %d\n", recievedReq.paths.count);
         for (int i = 0; i < recievedReq.paths.count; i++) {
-            LOG("\t%s\n", recievedReq.paths.pathList[i]);
+            printf("\t%s\n", recievedReq.paths.pathList[i]);
         }
 
         pthread_mutex_lock(&namingServer.connectedSSLock);

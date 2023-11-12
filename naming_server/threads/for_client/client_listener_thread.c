@@ -7,17 +7,16 @@ void* clientListenerRoutine(void* arg) {
     UNUSED(arg);
     ConnectedClients* connectedClients = &namingServer.connectedClients;
     while (1) {
-        LOG("Waiting for client...\n");
+        lprintf("Client_listener : Waiting for client...");
         int clientSockfd;
         if (acceptClient(namingServer.clientListenerSockfd, &clientSockfd)) FATAL_EXIT;
-        LOG("Client connected\n");
+        lprintf("Client_listener : Client connected");
         ClientInitRequest recievedReq;
         if (recieveClientRequest(clientSockfd, &recievedReq)) FATAL_EXIT;
-        LOG("ClientRequest recieved:\n");
+        lprintf("Client_listener : Recieved Passive port = %d, Alive port = %d", recievedReq.clientPassivePort, recievedReq.clientAlivePort);
 
         pthread_mutex_lock(&namingServer.connectedClientsLock);
         connectedClients->clients[connectedClients->count] = recievedReq;
-        LOG("Passive port = %d, Alive port = %d\n", recievedReq.clientPassivePort, recievedReq.clientAlivePort);
         connectedClients->clientSockfds[connectedClients->count] = clientSockfd;
         connectedClients->count++;
         if (connectedClients->count > MAX_CLIENTS) {

@@ -1,27 +1,104 @@
 #include "logging.h"
 
 #include <stdarg.h>
+#include <stdlib.h>
 #include <time.h>
 
-char __LOG_BUFFER[LOG_BUFFER_SIZE];
+#define UNUSED(x) (void)x
 
-#define UNUSED(x) \
-    do {          \
-        (void)x;  \
-    } while (0)
+// #define LOG_BUFFER_SIZE 64
+#define MAX_LOG_TEXT 512
+
+static struct LoggerStruct {
+    pthread_mutex_t lock;
+    char buffer[MAX_LOG_TEXT];
+    pthread_t loggingThread;
+    bool silent;
+    FILE* logFile;
+    pthread_cond_t isFull;
+    pthread_cond_t isEmpty;
+    bool size;
+} Logger;
 
 #define MAX_LOG_FILE_NAME 64
-#define LOG_FILE_FORMAT "%s%02d_%02d_%02d-%02d:%02d:%02d.log"
 
-
-ErrorCode createLogFile(FILE** ret, char* prefix) {
+ErrorCode initLogger(char* logDirectory, bool silent) {
     time_t timer = time(NULL);
-    struct tm timeNow = *localtime(&timer);
-    char logFileName[MAX_LOG_FILE_NAME];
-    sprintf(logFileName, LOG_FILE_FORMAT, prefix, timeNow.tm_mday, timeNow.tm_mon + 1, timeNow.tm_year % 100, timeNow.tm_hour, timeNow.tm_min, timeNow.tm_sec);
-#ifdef DEBUG
-    printf("Logging to %s\n", logFileName);
-#endif
-    *ret = fopen(logFileName, "w");
+    struct tm* timeNow = localtime(&timer);
+    char* fullPath = malloc(strlen(logDirectory) + MAX_LOG_FILE_NAME + 2);
+    strcpy(fullPath, logDirectory);
+    char fileName[MAX_LOG_FILE_NAME];
+    strftime(fileName, MAX_LOG_FILE_NAME, "%y_%m_%d-%T.log", timeNow);
+    strcat(fullPath, fileName);
+
+    Logger.logFile = fopen(fullPath, "w");
+    if (Logger.logFile == NULL) return FAILURE;
+    if (!silent) {
+        fprintf(stderr, "Logging to %s\n", fullPath);
+    }
+    free(fullPath);
+
+    pthread_mutex_init(&Logger.lock, NULL);
+    pthread_cond_init(&Logger.isEmpty, NULL);
+    pthread_cond_init(&Logger.isFull, NULL);
+    Logger.size = 0;
+    Logger.silent = silent;
     return SUCCESS;
+}
+
+void destroyLogger() {
+    fclose(Logger.logFile);
+    pthread_mutex_destroy(&Logger.lock);
+    pthread_cond_destroy(&Logger.isFull);
+    pthread_cond_destroy(&Logger.isEmpty);
+}
+
+#define MAX_TIME_STAMP 64
+#define TIME_STAMP_FORMAT "[ %F %T ]"
+
+void lprintf(char* format, ...) {
+    char timestamp[MAX_TIME_STAMP];
+    time_t timer = time(NULL);
+    va_list arguments;
+    va_start(arguments, format);
+    pthread_mutex_lock(&Logger.lock);
+    while (Logger.size != 0) {
+        pthread_cond_wait(&Logger.isEmpty, &Logger.lock);
+    }
+
+    struct tm* timeNow = localtime(&timer);
+    strftime(timestamp, MAX_TIME_STAMP, TIME_STAMP_FORMAT, timeNow);
+    strcpy(Logger.buffer, timestamp);
+    char logMessage[MAX_LOG_TEXT];
+    vsprintf(logMessage, format, arguments);
+    sprintf(Logger.buffer, "%s %s", timestamp, logMessage);
+    Logger.size = 1;
+    pthread_mutex_unlock(&Logger.lock);
+    pthread_cond_signal(&Logger.isFull);
+}
+
+void* logRoutine(void* arg) {
+    UNUSED(arg);
+    while (1) {
+        pthread_mutex_lock(&Logger.lock);
+        while (Logger.size != 1) pthread_cond_wait(&Logger.isFull, &Logger.lock);
+        fprintf(Logger.logFile, "%s\n", Logger.buffer);
+        if (!Logger.silent) fprintf(stderr, "%s\n", Logger.buffer);
+        fflush(Logger.logFile);
+        Logger.size = 0;
+        pthread_mutex_unlock(&Logger.lock);
+        pthread_cond_broadcast(&Logger.isEmpty);
+    }
+}
+
+ErrorCode startLogging() {
+    if (pthread_create(&Logger.loggingThread, NULL, logRoutine, NULL)) {
+        return FAILURE;
+    }
+
+    return SUCCESS;
+}
+
+void endLogging() {
+    pthread_join(Logger.loggingThread, NULL);
 }

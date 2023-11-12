@@ -5,39 +5,43 @@
 #include "../common/print/logging.h"
 #include "../common/networking/networking.h"
 
-FILE* logFile;
-
 ErrorCode initSS(StorageServer* ss) {
-    if (createLogFile(&logFile, SS_LOGS)) {
+    if (initLogger("logs/storage_server/", false)) {
         eprintf("Could not create log file\n");
         return FAILURE;
     }
-    LOG("Creating Passive Socket for SS's Alive Socket\n");
+
+    if (startLogging()) {
+        eprintf("Could not start logging\n");
+        return FAILURE;
+    }
+
+    lprintf("Main : Creating Passive Socket for SS's Alive Socket");
     if (createPassiveSocket(&ss->aliveSockfd, 0)) {
         return FAILURE;
     } else {
-        LOG("Getting port for SS's Alive Socket\n");
+        lprintf("Main : Getting port for SS's Alive Socket");
         if (getPort(ss->aliveSockfd, &ss->aliveSockPort))
             return FAILURE;
     }
-    LOG("Creating Passive Socket for SS's Client Socket\n");
+    lprintf("Main : Creating Passive Socket for SS's Client Socket");
     if (createPassiveSocket(&ss->clientSockfd, 0)) {
         return FAILURE;
     } else {
-        LOG("Getting port for SS's Client Socket\n");
+        lprintf("Main : Getting port for SS's Client Socket");
         if (getPort(ss->clientSockfd, &ss->clientSockfd))
             return FAILURE;
     }
-    LOG("Creating Passive Socket for SS's Passive Socket\n");
+    lprintf("Main : Creating Passive Socket for SS's Passive Socket");
     if (createPassiveSocket(&ss->passiveSockfd, 0)) {
         return FAILURE;
     } else {
-        LOG("Getting port for SS's Passive Socket\n");
+        lprintf("Main : Getting port for SS's Passive Socket");
         if (getPort(ss->passiveSockfd, &ss->passiveSockPort))
             return FAILURE;
     }
     inputPaths(ss);
-    LOG("Creating Active Socket for SS's NM Socket\n");
+    lprintf("Main : Creating Active Socket for SS's NM Socket");
     if (createActiveSocket(&ss->nmSockfd))
         return FAILURE;
 
@@ -45,11 +49,11 @@ ErrorCode initSS(StorageServer* ss) {
 }
 
 void destroySS(StorageServer* ss) {
-    LOG("Closing all sockfds of SS\n");
+    lprintf("Main : Closing all sockfds of SS");
+    destroyLogger();
     closeSocket(ss->aliveSockfd);
     closeSocket(ss->clientSockfd);
     closeSocket(ss->nmSockfd);
-    fclose(logFile);
 }
 
 ErrorCode inputPaths(StorageServer* ss) {
@@ -59,5 +63,19 @@ ErrorCode inputPaths(StorageServer* ss) {
         printf("Enter path %d: ", i + 1);
         scanf("%s", ss->paths.pathList[i]);
     }
+    return SUCCESS;
+}
+
+ErrorCode connectToNM(StorageServer* ss) {
+    SSInitRequest req;
+    req.paths = ss->paths;
+    req.SSAlivePort = ss->aliveSockPort;
+    req.SSClientPort = ss->clientSockPort;
+    req.SSPassivePort = ss->passiveSockfd;
+    connectToServer(ss->nmSockfd, SS_LISTEN_PORT);
+    if (sendSSRequest(ss->nmSockfd, &req)) {
+        return FAILURE;
+    }
+    
     return SUCCESS;
 }

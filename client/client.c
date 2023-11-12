@@ -5,30 +5,34 @@
 #include "../common/networking/networking.h"
 #include "../common/print/logging.h"
 
-FILE* logFile;
-
 ErrorCode initClient(Client* client) {
-    if (createLogFile(&logFile, CLIENT_LOGS)) {
+    if (initLogger("logs/storage_server/", false)) {
         eprintf("Could not create log file\n");
         return FAILURE;
     }
-    LOG("Creating Passive Socket for Client's Alive Socket\n");
+
+    if (startLogging()) {
+        eprintf("Could not start logging\n");
+        return FAILURE;
+    }
+
+    lprintf("Main : Creating Passive Socket for Client's Alive Socket");
     if (createPassiveSocket(&client->aliveSockfd, 0)) {
         return FAILURE;
     } else {
-        LOG("Getting port for Client's Alive Socket\n");
+        lprintf("Main : Getting port for Client's Alive Socket");
         if (getPort(client->aliveSockfd, &client->aliveSockPort))
             return FAILURE;
     }
-    LOG("Creating Passive Socket for Client's Passive Socket\n");
+    lprintf("Main : Creating Passive Socket for Client's Passive Socket");
     if (createPassiveSocket(&client->passiveSockfd, 0)) {
         return FAILURE;
     } else {
-        LOG("Getting port for Client's Passive Socket\n");
+        lprintf("Main : Getting port for Client's Passive Socket");
         if (getPort(client->passiveSockfd, &client->passiveSockPort))
             return FAILURE;
     }
-    LOG("Creating Active Socket for Client's NM Socket\n");
+    lprintf("Main : Creating Active Socket for Client's NM Socket");
     if (createActiveSocket(&client->nmSockfd))
         return FAILURE;
 
@@ -36,9 +40,9 @@ ErrorCode initClient(Client* client) {
 }
 
 void destroyClient(Client* client) {
-    LOG("Closing all sockfds in Client\n");
+    lprintf("Main : Closing all sockfds in Client");
+    destroyLogger();
     closeSocket(client->aliveSockfd);
     closeSocket(client->passiveSockfd);
     closeSocket(client->nmSockfd);
-    fclose(logFile);
 }

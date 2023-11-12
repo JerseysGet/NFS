@@ -20,7 +20,7 @@ void* ssAliveRoutine(void* arg) {
             }
 
             if (!canConnectToServer(tempSockfd, ssAlivePort)) {
-                LOG("Storage server with alive port %d disconnected\n", ssAlivePort);
+                lprintf("SS_Alive : Storage server with alive port %d disconnected", ssAlivePort);
                 toRemoveIndices[toRemoveCount++] = i;
             }
 

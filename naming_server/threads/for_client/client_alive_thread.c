@@ -20,7 +20,7 @@ void* clientAliveRoutine(void* arg) {
             }
 
             if (!canConnectToServer(tempSockfd, clientAlivePort)) {
-                LOG("Client with alive port %d disconnected\n", clientAlivePort);
+                lprintf("Client_Alive: Client with alive port %d disconnected", clientAlivePort);
                 toRemoveIndices[toRemoveCount++] = i;
             }
 

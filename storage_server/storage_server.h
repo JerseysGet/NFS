@@ -7,8 +7,6 @@
 #include "../common/networking/networking.h"
 #include "../common/networking/nm_ss/ss_connect.h"
 
-extern FILE* logFile;
-
 typedef struct StorageServer {
     int aliveSockfd;       /* Passive socket used by NM to check if SS is alive */
     int aliveSockPort;     /* Port for aliveSockfd */
@@ -22,6 +20,7 @@ typedef struct StorageServer {
 
 ErrorCode initSS(StorageServer* ss);
 ErrorCode inputPaths(StorageServer* ss);
+ErrorCode connectToNM(StorageServer* ss);
 void destroySS(StorageServer* ss);
 
 #endif

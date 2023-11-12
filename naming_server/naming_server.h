@@ -12,8 +12,6 @@
 #include "./threads/for_ss/ss_alive_thread.h"
 #include "./threads/for_ss/ss_listener_thread.h"
 
-extern FILE* logFile;
-
 #define FATAL_EXIT   \
     do {             \
         destroyNM(); \

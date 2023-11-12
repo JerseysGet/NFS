@@ -5,7 +5,6 @@
 #include "../common/networking/networking.h"
 
 NamingServer namingServer;
-FILE* logFile = NULL;
 
 ErrorCode initConnectedSS() {
     namingServer.connectedSS.count = 0;
@@ -30,25 +29,29 @@ ErrorCode initConnectedClients() {
 }
 
 ErrorCode initNM() {
-    if (createLogFile(&logFile, NM_LOGS)) {
+    if (initLogger("logs/naming_server/", false)) {
         eprintf("Could not create log file\n");
         return FAILURE;
     }
-    LOG("Initializing naming server\n");
-    
+
+    if (startLogging()) {
+        eprintf("Could not start logging\n");
+        return FAILURE;
+    }
+
     if (initConnectedSS()) return FAILURE;
-    LOG("Creating passive socket (ss listener) on port = %d\n", SS_LISTEN_PORT);
+    lprintf("Main : Creating passive socket (ss listener) on port = %d", SS_LISTEN_PORT);
     if (createPassiveSocket(&namingServer.ssListenerSockfd, SS_LISTEN_PORT)) return FAILURE;
 
     if (initConnectedClients()) return FAILURE;
-    LOG("Creating passive socket (client listener) on port = %d\n", CLIENT_LISTEN_PORT);
+    lprintf("Main : Creating passive socket (client listener) on port = %d", CLIENT_LISTEN_PORT);
     if (createPassiveSocket(&namingServer.clientListenerSockfd, CLIENT_LISTEN_PORT)) return FAILURE;
 
     return SUCCESS;
 }
 
 void destroyNM() {
-    fclose(logFile);
+    destroyLogger();
     pthread_mutex_destroy(&namingServer.connectedSSLock);
     pthread_mutex_destroy(&namingServer.connectedClientsLock);
     close(namingServer.ssListenerSockfd);
