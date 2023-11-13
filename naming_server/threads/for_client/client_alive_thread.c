@@ -6,9 +6,14 @@
 void* clientAliveRoutine(void* arg) {
     UNUSED(arg);
     ConnectedClients* connectedClients = &namingServer.connectedClients;
-    while (1) {
-        int toRemoveIndices[MAX_CLIENTS];
+    int toRemoveIndices[MAX_CLIENTS];
+
+    pthread_mutex_lock(&namingServer.cleanupLock);
+    while (!namingServer.isCleaningup) {
+        pthread_mutex_unlock(&namingServer.cleanupLock);
+
         int toRemoveCount = 0;
+        // printf("Client_Alive trying to lock connectedClients\n");
         pthread_mutex_lock(&namingServer.connectedClientsLock);
         for (int i = 0; i < connectedClients->count; i++) {
             int clientAlivePort = connectedClients->clients[i].clientAlivePort;
@@ -43,7 +48,14 @@ void* clientAliveRoutine(void* arg) {
         }
         connectedClients->count = newClientCount;
         pthread_mutex_unlock(&namingServer.connectedClientsLock);
+
+        // printf("Client_Alive trying to lock cleanup\n");
+        pthread_mutex_lock(&namingServer.cleanupLock);
     }
+    pthread_mutex_unlock(&namingServer.cleanupLock);
+
+    lprintf("Client_Alive : Cleaning up");
+    return NULL;
 }
 
 ErrorCode createClientAliveThread(pthread_t* aliveThread) {

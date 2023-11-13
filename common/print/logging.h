@@ -12,6 +12,9 @@
 */
 ErrorCode initLogger(char* logDirectory, bool silent);
 ErrorCode startLogging();
+pthread_t getLoggingThread();
+pthread_cond_t* getLoggerFull();
+void cleanUpLogger();
 void lprintf(char* format, ...);
 
 /*

@@ -6,10 +6,10 @@
 
 #define UNUSED(x) (void)x
 
-// #define LOG_BUFFER_SIZE 64
-#define MAX_LOG_TEXT 512
+#define MAX_LOG_FILE_NAME 64
 
-static struct LoggerStruct {
+#define MAX_LOG_TEXT 512
+struct LoggerStruct {
     pthread_mutex_t lock;
     char buffer[MAX_LOG_TEXT];
     pthread_t loggingThread;
@@ -17,10 +17,9 @@ static struct LoggerStruct {
     FILE* logFile;
     pthread_cond_t isFull;
     pthread_cond_t isEmpty;
+    bool isCleaningup;
     bool size;
 } Logger;
-
-#define MAX_LOG_FILE_NAME 64
 
 ErrorCode initLogger(char* logDirectory, bool silent) {
     time_t timer = time(NULL);
@@ -41,13 +40,15 @@ ErrorCode initLogger(char* logDirectory, bool silent) {
     pthread_mutex_init(&Logger.lock, NULL);
     pthread_cond_init(&Logger.isEmpty, NULL);
     pthread_cond_init(&Logger.isFull, NULL);
+    Logger.loggingThread = 0;
     Logger.size = 0;
     Logger.silent = silent;
+    Logger.isCleaningup = false;
     return SUCCESS;
 }
 
 void destroyLogger() {
-    fclose(Logger.logFile);
+    if (Logger.logFile) fclose(Logger.logFile);
     pthread_mutex_destroy(&Logger.lock);
     pthread_cond_destroy(&Logger.isFull);
     pthread_cond_destroy(&Logger.isEmpty);
@@ -79,9 +80,18 @@ void lprintf(char* format, ...) {
 
 void* logRoutine(void* arg) {
     UNUSED(arg);
-    while (1) {
+
+    while (true) {
+        // printf("Logger locking lock\n");
         pthread_mutex_lock(&Logger.lock);
-        while (Logger.size != 1) pthread_cond_wait(&Logger.isFull, &Logger.lock);
+        // printf("Logger got lock\n");
+
+        while (Logger.size != 1) {
+            pthread_cond_wait(&Logger.isFull, &Logger.lock);
+        }
+
+        if (Logger.isCleaningup) break;
+
         fprintf(Logger.logFile, "%s\n", Logger.buffer);
         if (!Logger.silent) fprintf(stderr, "%s\n", Logger.buffer);
         fflush(Logger.logFile);
@@ -89,6 +99,9 @@ void* logRoutine(void* arg) {
         pthread_mutex_unlock(&Logger.lock);
         pthread_cond_broadcast(&Logger.isEmpty);
     }
+
+    printf("Cleaning up logger\n");
+    return NULL;
 }
 
 ErrorCode startLogging() {
@@ -100,5 +113,17 @@ ErrorCode startLogging() {
 }
 
 void endLogging() {
-    pthread_join(Logger.loggingThread, NULL);
+    if (Logger.loggingThread == 0) return;
+    pthread_mutex_lock(&Logger.lock);
+    while (Logger.size != 0) {
+        pthread_cond_wait(&Logger.isEmpty, &Logger.lock);
+    }
+    Logger.isCleaningup = true;
+    Logger.size = 1;
+    pthread_mutex_unlock(&Logger.lock);
+    pthread_cond_signal(&Logger.isFull);
+}
+
+pthread_t getLoggingThread() {
+    return Logger.loggingThread;
 }

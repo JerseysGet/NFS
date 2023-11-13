@@ -2,29 +2,54 @@
 
 #include "../../../common/networking/networking.h"
 
+void addClient(ConnectedClients* connectedClients, ClientInitRequest* req, int clientSockfd) {
+    connectedClients->clients[connectedClients->count] = *req;
+    connectedClients->clientSockfds[connectedClients->count] = clientSockfd;
+    connectedClients->count++;
+    if (connectedClients->count > MAX_CLIENTS) {
+        eprintf("Too many clients\n");
+        FATAL_EXIT;
+    }
+}
+
 /* Terminates naming server in case of fatal errors */
 void* clientListenerRoutine(void* arg) {
     UNUSED(arg);
     ConnectedClients* connectedClients = &namingServer.connectedClients;
-    while (1) {
+    pthread_mutex_lock(&namingServer.cleanupLock);
+    while (!namingServer.isCleaningup) {
+        pthread_mutex_unlock(&namingServer.cleanupLock);
+
         lprintf("Client_listener : Waiting for client...");
         int clientSockfd;
-        if (acceptClient(namingServer.clientListenerSockfd, &clientSockfd)) FATAL_EXIT;
+        if (acceptClient(namingServer.clientListenerSockfd, &clientSockfd)) {
+            pthread_mutex_lock(&namingServer.cleanupLock);
+            namingServer.isCleaningup = true;
+            break;
+        }
         lprintf("Client_listener : Client connected");
         ClientInitRequest recievedReq;
-        if (recieveClientRequest(clientSockfd, &recievedReq)) FATAL_EXIT;
+        if (recieveClientRequest(clientSockfd, &recievedReq)) {
+            pthread_mutex_lock(&namingServer.cleanupLock);
+            namingServer.isCleaningup = true;
+            break;
+        }
+        
         lprintf("Client_listener : Recieved Passive port = %d, Alive port = %d", recievedReq.clientPassivePort, recievedReq.clientAlivePort);
 
+        // printf("Client_listener trying to lock connectedClientsLock\n");
         pthread_mutex_lock(&namingServer.connectedClientsLock);
-        connectedClients->clients[connectedClients->count] = recievedReq;
-        connectedClients->clientSockfds[connectedClients->count] = clientSockfd;
-        connectedClients->count++;
-        if (connectedClients->count > MAX_CLIENTS) {
-            eprintf("Too many clients\n");
-            FATAL_EXIT;
-        }
+        addClient(connectedClients, &recievedReq, clientSockfd);
         pthread_mutex_unlock(&namingServer.connectedClientsLock);
+
+        // printf("Client_listener trying to lock cleanup\n");
+        pthread_mutex_lock(&namingServer.cleanupLock);
     }
+    pthread_mutex_unlock(&namingServer.cleanupLock);
+
+    lprintf("Client_listener : Cleaning up");
+    close(namingServer.clientListenerSockfd);
+    return NULL;
 }
 
 ErrorCode createClientListenerThread(pthread_t* listenerThread) {

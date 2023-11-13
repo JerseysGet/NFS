@@ -1,12 +1,14 @@
 #ifndef __NAMING_SERVER_H
 #define __NAMING_SERVER_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "../common/error/error.h"
 #include "../common/networking/nm_client/client_connect.h"
 #include "../common/networking/nm_ss/ss_connect.h"
 #include "../common/print/logging.h"
+#include "../common/signals/cleanup_signal.h"
 #include "./threads/for_client/client_alive_thread.h"
 #include "./threads/for_client/client_listener_thread.h"
 #include "./threads/for_ss/ss_alive_thread.h"
@@ -50,6 +52,11 @@ typedef struct NamingServer {
     pthread_mutex_t connectedClientsLock; /* Lock for connectedClients */
     pthread_t clientListener;             /* Client listener thread */
     pthread_t clientAliveChecker;         /* Checks if connected clients are alive */
+
+    /* Cleanup stuff */
+    pthread_mutex_t cleanupLock;
+    bool isCleaningup;
+    ErrorCode exitCode;
 } NamingServer;
 
 /* Unique naming server instance */
@@ -57,5 +64,7 @@ extern NamingServer namingServer;
 
 ErrorCode initNM();
 void destroyNM();
+bool isCleaningUp();
+void initiateCleanup(ErrorCode exitCode);
 
 #endif

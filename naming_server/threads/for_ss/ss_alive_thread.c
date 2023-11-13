@@ -6,9 +6,14 @@
 void* ssAliveRoutine(void* arg) {
     UNUSED(arg);
     ConnectedSS* connectedSS = &namingServer.connectedSS;
-    while (1) {
-        int toRemoveIndices[MAX_STORAGE_SERVERS];
+    int toRemoveIndices[MAX_STORAGE_SERVERS];
+
+    pthread_mutex_lock(&namingServer.cleanupLock);
+    while (!namingServer.isCleaningup) {
+        pthread_mutex_unlock(&namingServer.cleanupLock);
+        
         int toRemoveCount = 0;
+        // printf("SS_Alive trying to lock connectedSSLock\n");
         pthread_mutex_lock(&namingServer.connectedSSLock);
         for (int i = 0; i < connectedSS->count; i++) {
             int ssAlivePort = connectedSS->storageServers[i].SSAlivePort;
@@ -41,9 +46,15 @@ void* ssAliveRoutine(void* arg) {
                 newSSCount++;
             }
         }
+
         connectedSS->count = newSSCount;
         pthread_mutex_unlock(&namingServer.connectedSSLock);
+        pthread_mutex_lock(&namingServer.cleanupLock);
     }
+    pthread_mutex_unlock(&namingServer.cleanupLock);
+    
+    lprintf("SS_Alive : Cleaning up");
+    return NULL;
 }
 
 ErrorCode createSSAliveThread(pthread_t* aliveThread) {
