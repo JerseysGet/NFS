@@ -6,9 +6,11 @@
 #include "../common/networking/nm_client/client_connect.h"
 
 typedef struct Client {
-    int passiveSockfd;   /* Temporary */
-    int passiveSockPort; /* Temporary */
-    int nmSockfd;        /* To communicate with naming server */
+    int passiveSockfd;   /*  */
+    int passiveSockPort; /* To communicate with naming server */
+
+    int nmSockfd;        /* To initialize & communicate with nm */
+    
     int aliveSockfd;     /* Passive socket used by NM to check if client is alive */
     int aliveSockPort;   /* Port for aliveSockfd */
 } Client;
