@@ -21,16 +21,21 @@ void* ssListenerRoutine(void* arg) {
         lprintf("SS_listener : Waiting for storage server...");
         int ssSockfd;
         if (acceptClient(namingServer.ssListenerSockfd, &ssSockfd)) {
+            pthread_mutex_lock(&namingServer.cleanupLock);
             namingServer.isCleaningup = true;
+            pthread_mutex_unlock(&namingServer.cleanupLock);
             break;
         }
 
         lprintf("SS_listener : Storage server connected");
         SSInitRequest recievedReq;
         if (recieveSSRequest(ssSockfd, &recievedReq)) {
+            pthread_mutex_lock(&namingServer.cleanupLock);
             namingServer.isCleaningup = true;
+            pthread_mutex_unlock(&namingServer.cleanupLock);
             break;
         }
+
         lprintf("SS_listener : Recieved Alive port = %d, Passive port = %d, Client port = %d", recievedReq.SSAlivePort, recievedReq.SSPassivePort, recievedReq.SSClientPort);
         
         printf("path count = %d\n", recievedReq.paths.count);
@@ -45,7 +50,7 @@ void* ssListenerRoutine(void* arg) {
     }
 
     // cleaning up
-    lprintf("SS_listener: Cleaning up");
+    lprintf("SS_listener : Cleaning up");
     close(namingServer.ssListenerSockfd);
     return NULL;
 }

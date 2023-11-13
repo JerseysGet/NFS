@@ -50,6 +50,7 @@ ErrorCode initSS(StorageServer* ss) {
 
 void destroySS(StorageServer* ss) {
     lprintf("Main : Closing all sockfds of SS");
+    endLogging();
     destroyLogger();
     closeSocket(ss->aliveSockfd);
     closeSocket(ss->clientSockfd);

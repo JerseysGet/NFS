@@ -16,36 +16,34 @@ void addClient(ConnectedClients* connectedClients, ClientInitRequest* req, int c
 void* clientListenerRoutine(void* arg) {
     UNUSED(arg);
     ConnectedClients* connectedClients = &namingServer.connectedClients;
-    pthread_mutex_lock(&namingServer.cleanupLock);
-    while (!namingServer.isCleaningup) {
-        pthread_mutex_unlock(&namingServer.cleanupLock);
-
+    while (!isCleaningUp()) {
         lprintf("Client_listener : Waiting for client...");
+        
         int clientSockfd;
         if (acceptClient(namingServer.clientListenerSockfd, &clientSockfd)) {
             pthread_mutex_lock(&namingServer.cleanupLock);
             namingServer.isCleaningup = true;
+            pthread_mutex_unlock(&namingServer.cleanupLock);
             break;
         }
+
         lprintf("Client_listener : Client connected");
         ClientInitRequest recievedReq;
         if (recieveClientRequest(clientSockfd, &recievedReq)) {
             pthread_mutex_lock(&namingServer.cleanupLock);
             namingServer.isCleaningup = true;
+            pthread_mutex_unlock(&namingServer.cleanupLock);
             break;
         }
-        
+
         lprintf("Client_listener : Recieved Passive port = %d, Alive port = %d", recievedReq.clientPassivePort, recievedReq.clientAlivePort);
 
         // printf("Client_listener trying to lock connectedClientsLock\n");
         pthread_mutex_lock(&namingServer.connectedClientsLock);
         addClient(connectedClients, &recievedReq, clientSockfd);
         pthread_mutex_unlock(&namingServer.connectedClientsLock);
-
         // printf("Client_listener trying to lock cleanup\n");
-        pthread_mutex_lock(&namingServer.cleanupLock);
     }
-    pthread_mutex_unlock(&namingServer.cleanupLock);
 
     lprintf("Client_listener : Cleaning up");
     close(namingServer.clientListenerSockfd);

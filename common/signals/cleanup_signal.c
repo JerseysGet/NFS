@@ -23,13 +23,7 @@ void initEscapeHatch(void (*cleanup)()) {
     sa.sa_flags = SA_RESTART;
     cleanupFunc = cleanup;
     jmpRet = setjmp(envBuffer);
-    sigaction(SIGFPE, &sa, NULL);
     sigaction(SIGINT, &sa, NULL);
-    sigaction(SIGPIPE, &sa, NULL);
-    sigaction(SIGTERM, &sa, NULL);
-    sigaction(SIGQUIT, &sa, NULL);
-    sigaction(SIGSEGV, &sa, NULL);
-    sigaction(SIGHUP, &sa, NULL);
 
     if (jmpRet) {
         lprintf("Recived Signal: %s", strsignal(jmpRet));

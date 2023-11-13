@@ -8,10 +8,7 @@ void* clientAliveRoutine(void* arg) {
     ConnectedClients* connectedClients = &namingServer.connectedClients;
     int toRemoveIndices[MAX_CLIENTS];
 
-    pthread_mutex_lock(&namingServer.cleanupLock);
-    while (!namingServer.isCleaningup) {
-        pthread_mutex_unlock(&namingServer.cleanupLock);
-
+    while (!isCleaningUp()) {
         int toRemoveCount = 0;
         // printf("Client_Alive trying to lock connectedClients\n");
         pthread_mutex_lock(&namingServer.connectedClientsLock);
@@ -21,7 +18,9 @@ void* clientAliveRoutine(void* arg) {
             int tempSockfd;
             if (createActiveSocket(&tempSockfd)) {
                 eprintf("Could not create active socket to test if client with alive port %d is alive\n", clientAlivePort);
-                FATAL_EXIT;
+                pthread_mutex_lock(&namingServer.cleanupLock);
+                namingServer.isCleaningup = true;
+                pthread_mutex_unlock(&namingServer.cleanupLock);
             }
 
             if (!canConnectToServer(tempSockfd, clientAlivePort)) {
@@ -31,7 +30,9 @@ void* clientAliveRoutine(void* arg) {
 
             if (closeSocket(tempSockfd)) {
                 eprintf("Could not close socket\n");
-                FATAL_EXIT;
+                pthread_mutex_lock(&namingServer.cleanupLock);
+                namingServer.isCleaningup = true;
+                pthread_mutex_unlock(&namingServer.cleanupLock);
             }
         }
 
@@ -50,10 +51,7 @@ void* clientAliveRoutine(void* arg) {
         pthread_mutex_unlock(&namingServer.connectedClientsLock);
 
         // printf("Client_Alive trying to lock cleanup\n");
-        pthread_mutex_lock(&namingServer.cleanupLock);
     }
-    pthread_mutex_unlock(&namingServer.cleanupLock);
-
     lprintf("Client_Alive : Cleaning up");
     return NULL;
 }

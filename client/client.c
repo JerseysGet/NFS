@@ -41,6 +41,7 @@ ErrorCode initClient(Client* client) {
 
 void destroyClient(Client* client) {
     lprintf("Main : Closing all sockfds in Client");
+    endLogging();
     destroyLogger();
     closeSocket(client->aliveSockfd);
     closeSocket(client->passiveSockfd);
