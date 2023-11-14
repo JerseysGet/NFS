@@ -5,4 +5,6 @@ typedef struct SSInfo {
     int ssClientPort;
 } SSInfo;
 
+#define INVALID_SSINFO (SSInfo) {-1};
+
 #endif

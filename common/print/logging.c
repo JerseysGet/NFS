@@ -31,7 +31,10 @@ ErrorCode initLogger(char* logDirectory, bool silent) {
     strcat(fullPath, fileName);
 
     Logger.logFile = fopen(fullPath, "w");
-    if (Logger.logFile == NULL) return FAILURE;
+    if (Logger.logFile == NULL) {
+        free(fullPath);
+        return FAILURE;
+    }
     if (!silent) {
         fprintf(stderr, "Logging to %s\n", fullPath);
     }

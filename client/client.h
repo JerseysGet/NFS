@@ -6,16 +6,21 @@
 #include "../common/networking/nm_client/client_connect.h"
 
 typedef struct Client {
-    int passiveSockfd;   /*  */
-    int passiveSockPort; /* To communicate with naming server */
+    int passiveSockfd;   /* Temporary */
+    int passiveSockPort; /* Temporary */
 
     int nmSockfd;        /* To initialize & communicate with nm */
     
     int aliveSockfd;     /* Passive socket used by NM to check if client is alive */
     int aliveSockPort;   /* Port for aliveSockfd */
+
+    ErrorCode exitCode;
 } Client;
 
 ErrorCode initClient(Client* client);
 void destroyClient(Client* client);
+ErrorCode connectToNM(Client* client);
+
+
 
 #endif
