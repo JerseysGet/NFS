@@ -24,12 +24,14 @@ COMMON_OBJECTS += common/print/logging.o
 COMMON_OBJECTS += common/networking/nm_ss/ss_connect.o
 COMMON_OBJECTS += common/networking/nm_client/client_connect.o
 COMMON_OBJECTS += common/signals/cleanup_signal.o
+COMMON_OBJECTS += common/networking/ack/ssinfo.o
 
 NM_OBJECTS = naming_server/naming_server.o
 NM_OBJECTS += naming_server/threads/for_ss/ss_listener_thread.o
 NM_OBJECTS += naming_server/threads/for_ss/ss_alive_thread.o
 NM_OBJECTS += naming_server/threads/for_client/client_listener_thread.o
 NM_OBJECTS += naming_server/threads/for_client/client_alive_thread.o
+NM_OBJECTS += naming_server/trie/trie.o
 
 SS_OBJECTS = storage_server/storage_server.c
 

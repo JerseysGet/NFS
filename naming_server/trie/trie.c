@@ -21,6 +21,9 @@ typedef TrieNodeStruct* TrieNode;
 
 // UTIL FUNCTIONS
 
+TrieNode trie = NULL;
+pthread_mutex_t lock;
+
 TrieNode newNode(SSInfo ssinfo, char* token) {
     TrieNode ret = malloc(sizeof(TrieNodeStruct));
     assert(ret);
@@ -87,12 +90,8 @@ clean_and_return:
 
 // EXPOSED FUNCTIONS
 
-TrieNode trie = NULL;
-pthread_mutex_t lock;
-
 void initTrie() {
-    SSInfo ssinfo;
-    ssinfo.ssClientPort = -1;
+    SSInfo ssinfo = INVALID_SSINFO;
     trie = newNode(ssinfo, "");
     pthread_mutex_init(&lock, NULL);
 }
@@ -102,7 +101,7 @@ void lockTrie() {
 }
 
 void unlockTrie() {
-    pthread_mutex_lock(&lock);
+    pthread_mutex_unlock(&lock);
 }
 
 ErrorCode addToTrie(char* path, SSInfo ssinfo) {
@@ -134,6 +133,15 @@ ErrorCode search(char* path, SSInfo* ret) {
     return SUCCESS;
 }
 
+void deleteNodeFromTrie(TrieNode node) {
+    TrieNode parent = node->parent;
+    if (parent->firstChild == node) {
+        parent->firstChild = node->next;
+    }
+
+    removeChild(node);
+}
+
 ErrorCode deleteFromTrie(char* path) {
     TrieNode node = searchNode(path);
     if (node == NULL) {
@@ -143,20 +151,32 @@ ErrorCode deleteFromTrie(char* path) {
         return 2;
     }
 
-    TrieNode parent = node->parent;
-    if (parent->firstChild == node) {
-        parent->firstChild = node->next;
+    deleteNodeFromTrie(node);
+    return SUCCESS;
+}
+
+void destroySSFromTrieHelper(TrieNode node, SSInfo ssinfo) {
+    if (node == NULL) return;
+    for (TrieNode itr = node->firstChild; itr != NULL;) {
+        TrieNode next = itr->next;
+        destroySSFromTrieHelper(itr, ssinfo);
+        itr = next;
     }
 
-    removeChild(node);
+    if (SSInfoEqual(&node->ssinfo, &ssinfo)) deleteNodeFromTrie(node);
+}
+
+ErrorCode deleteSSFromTrie(SSInfo ssinfo) {
+    destroySSFromTrieHelper(trie, ssinfo);
     return SUCCESS;
 }
 
 void destroyTrieHelper(TrieNode node) {
     if (node == NULL) return;
-    for (TrieNode itr = node->firstChild; itr != NULL; itr = itr->next) {
+    for (TrieNode itr = node->firstChild; itr != NULL;) {
+        TrieNode next = itr->next;
         destroyTrieHelper(itr);
-        assert(itr == NULL);
+        itr = next;
     }
 
     deleteNode(node);

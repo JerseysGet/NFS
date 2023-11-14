@@ -33,6 +33,12 @@ ErrorCode search(char* path, SSInfo* ret);
 ErrorCode deleteFromTrie(char* path);
 
 /*
+    return 0 = success
+    Must be externally synchronized
+*/
+ErrorCode deleteSSFromTrie(SSInfo ssinfo);
+
+/*
     Should have exactly one thread calling this, and no threads waiting on lock. Should not hold the lock while calling destroyTrie()
 */
 void destroyTrie();

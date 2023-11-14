@@ -12,7 +12,7 @@ typedef struct StorageServer {
     int aliveSockPort;     /* Port for aliveSockfd */
     int clientSockfd;      /* Passive socket for client to connect to SS */
     int clientSockPort;    /* Port for clientSockfd */
-    int passiveSockfd;     /* Passive socket used by nm to communicate with SS */
+    int passiveSockfd;     /* Passive socket used by nm to communicate with SS   */
     int passiveSockPort;   /* Port for PassiveSockfd */
     AccessiblePaths paths; /* List of paths accessible by SS */
     int nmSockfd;          /* Active socket for talking to NM */

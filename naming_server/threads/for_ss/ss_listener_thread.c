@@ -10,6 +10,14 @@ void addSS(ConnectedSS* connectedSS, SSInitRequest* req, int ssSockfd) {
         eprintf("Too many storage servers\n");
         FATAL_EXIT;
     }
+
+    SSInfo ssinfo;
+    initSSInfo(&ssinfo, req->SSClientPort, req->SSPassivePort);
+    lockTrie();
+    for (int i = 0; i < req->paths.count; i++) {
+        addToTrie(req->paths.pathList[i], ssinfo);
+    }
+    unlockTrie();
 }
 
 /* Terminates naming server in case of fatal errors */

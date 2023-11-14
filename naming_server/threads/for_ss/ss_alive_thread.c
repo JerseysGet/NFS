@@ -34,8 +34,14 @@ void* ssAliveRoutine(void* arg) {
         int newSSCount = 0;
         int ptr = 0;
         for (int i = 0; i < connectedSS->count; i++) {
+            SSInitRequest* req = &connectedSS->storageServers[i];
             if (ptr < toRemoveCount && i == toRemoveIndices[ptr]) {  // ignore i
                 ptr++;
+                SSInfo ssinfo;
+                initSSInfo(&ssinfo, req->SSClientPort, req->SSPassivePort);
+                lockTrie();
+                deleteSSFromTrie(ssinfo);  
+                unlockTrie();
             } else {
                 connectedSS->storageServers[newSSCount] = connectedSS->storageServers[i];
                 connectedSS->storageServerSockfds[newSSCount] = connectedSS->storageServerSockfds[i];
@@ -46,7 +52,7 @@ void* ssAliveRoutine(void* arg) {
         connectedSS->count = newSSCount;
         pthread_mutex_unlock(&namingServer.connectedSSLock);
     }
-    
+
     lprintf("SS_Alive : Cleaning up");
     return NULL;
 }

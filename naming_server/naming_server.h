@@ -13,6 +13,7 @@
 #include "./threads/for_client/client_listener_thread.h"
 #include "./threads/for_ss/ss_alive_thread.h"
 #include "./threads/for_ss/ss_listener_thread.h"
+#include "./trie/trie.h"
 
 #define FATAL_EXIT   \
     do {             \

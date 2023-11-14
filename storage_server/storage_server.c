@@ -29,7 +29,7 @@ ErrorCode initSS(StorageServer* ss) {
         return FAILURE;
     } else {
         lprintf("Main : Getting port for SS's Client Socket");
-        if (getPort(ss->clientSockfd, &ss->clientSockfd))
+        if (getPort(ss->clientSockfd, &ss->clientSockPort))
             return FAILURE;
     }
     lprintf("Main : Creating Passive Socket for SS's Passive Socket");
@@ -72,7 +72,7 @@ ErrorCode connectToNM(StorageServer* ss) {
     req.paths = ss->paths;
     req.SSAlivePort = ss->aliveSockPort;
     req.SSClientPort = ss->clientSockPort;
-    req.SSPassivePort = ss->passiveSockfd;
+    req.SSPassivePort = ss->passiveSockPort;
     connectToServer(ss->nmSockfd, SS_LISTEN_PORT);
     if (sendSSRequest(ss->nmSockfd, &req)) {
         return FAILURE;

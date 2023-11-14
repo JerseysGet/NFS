@@ -62,6 +62,9 @@ ErrorCode initNM() {
         goto destroy_logger;
     }
 
+    lprintf("Main : Initializing trie");
+    initTrie();
+
     initEscapeHatch(signalSuccess);
 
     if (initConnectedSS()) {
@@ -83,8 +86,8 @@ ErrorCode initNM() {
     }
     return SUCCESS;
 
-// destroy_client_listener:
-//     close(namingServer.clientListenerSockfd);
+    // destroy_client_listener:
+    //     close(namingServer.clientListenerSockfd);
 
 destroy_connected_clients:
     destroyConnectedClients();
@@ -116,10 +119,14 @@ void destroyNM() {
     JOIN_IF_CREATED(namingServer.clientListener, NULL);
     JOIN_IF_CREATED(namingServer.ssListener, NULL);
 
+    lprintf("Main : Cleaning up trie");
+    destroyTrie();
+
     lprintf("Main : Exit request to logger thread");
     endLogging();
     destroyLogger();
     JOIN_IF_CREATED(getLoggingThread(), NULL);
+    
 
     pthread_mutex_destroy(&namingServer.connectedSSLock);
     pthread_mutex_destroy(&namingServer.connectedClientsLock);
