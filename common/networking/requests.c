@@ -21,7 +21,12 @@ ErrorCode sendRequestTypeAck(RequestTypeAck* ack, int sockfd) {
     return SUCCESS;
 }
 
-ErrorCode recieveRequestTypeAck(RequestTypeAck* ack, int sockfd);
+ErrorCode recieveRequestTypeAck(RequestTypeAck* ack, int sockfd) {
+    if (socketRecieve(sockfd, ack, sizeof(RequestTypeAck))) {
+        return FAILURE;
+    }
+    return SUCCESS;
+}
 
 ErrorCode sendRequest(void* request, size_t requestSize, int sockfd) {
     if (socketSend(sockfd, requestSize, requestSize)) {
