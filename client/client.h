@@ -4,6 +4,7 @@
 #include "../common/error/error.h"
 #include "../common/networking/networking.h"
 #include "../common/networking/nm_client/client_connect.h"
+#include "../common/networking/requests.h"
 
 typedef struct Client {
     int passiveSockfd;   /* Temporary */
