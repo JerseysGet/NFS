@@ -14,6 +14,7 @@ typedef enum RequestType {
     REQUEST_WRITE,
     REQUEST_SIZE,
     REQUEST_PERMISSION,
+    REQUEST_LIST,
 } RequestType;
 
 bool isPrivileged(RequestType type);
