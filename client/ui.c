@@ -22,14 +22,14 @@ int main() {
 
     char path[512];
     char filename[256];
-
+    char content[512];
     switch (option) {
         case 1:
             type = REQUEST_WRITE;
             printf("Enter file path: ");
             scanf("%s", path);
             printf("Enter content to write: ");
-            scanf("%s", filename);
+            scanf("%s", content);
             break;
         case 2:
             type = REQUEST_READ;
@@ -59,7 +59,7 @@ int main() {
             scanf("%s", path);
             break;
         case 7:
-            type = //??;
+            type = REQUEST_LIST;
             printf("Enter folder path to list: ");
             scanf("%s", path);
             break;
@@ -77,8 +77,7 @@ int main() {
             printf("Invalid option\n");
             return 1;
     }
-
-    
-
     return 0;
 }
+
+/*1. Write to File,  1 path2. Read a file, 1 path3. Delete a file 1 path4. Delete a folder 1 path5. Create a file, 1 path, 1 file name6. Create a folder 1 path7. List a folder, 1 path8. Get size, 1 path9. Get permissions, 1 path*/
