@@ -8,6 +8,7 @@
 typedef struct CopyRequest {
     char SrcPath[MAX_PATH_SIZE];
     char DestPath[MAX_PATH_SIZE];
+    // more content to be defined;
 } CopyRequest;
 
 
