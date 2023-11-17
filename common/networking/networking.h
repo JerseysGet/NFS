@@ -35,6 +35,12 @@ ErrorCode socketSend(int sockfd, void* dataPtr, size_t bytes);
 ErrorCode socketRecieve(int sockfd, void* dataPtr, size_t bytes);
 
 /*
+    Does not print error message in case of FAILURE, ERRORCODE
+*/
+
+ErrorCode socketRecieveTimeout(int sockfd, void* dataPtr, size_t bytes, int millis, bool* recieved);
+
+/*
     Does not print error message in case of FAILURE
 */
 ErrorCode closeSocket(int sockfd);

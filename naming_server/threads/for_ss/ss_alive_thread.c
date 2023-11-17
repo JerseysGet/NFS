@@ -40,7 +40,7 @@ void* ssAliveRoutine(void* arg) {
                 SSInfo ssinfo;
                 initSSInfo(&ssinfo, req->SSClientPort, req->SSPassivePort);
                 lockTrie();
-                deleteSSFromTrie(ssinfo);  
+                deleteSSFromTrie(ssinfo);
                 unlockTrie();
             } else {
                 connectedSS->storageServers[newSSCount] = connectedSS->storageServers[i];

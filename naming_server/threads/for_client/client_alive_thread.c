@@ -6,52 +6,41 @@
 void* clientAliveRoutine(void* arg) {
     UNUSED(arg);
     ConnectedClients* connectedClients = &namingServer.connectedClients;
-    int toRemoveIndices[MAX_CLIENTS];
 
     while (!isCleaningUp()) {
-        int toRemoveCount = 0;
-        // printf("Client_Alive trying to lock connectedClients\n");
-        pthread_mutex_lock(&namingServer.connectedClientsLock);
-        for (int i = 0; i < connectedClients->count; i++) {
-            int clientAlivePort = connectedClients->clients[i].clientAlivePort;
+        pthread_mutex_lock(&connectedClients->clientLock);
+        for (ConnectedClient itr = connectedClients->front, nxt; itr != NULL; itr = nxt) {
+            nxt = itr->next;
+            int clientAlivePort = itr->clientInitRequest.clientAlivePort;
 
-            int tempSockfd;
+            int tempSockfd; 
             if (createActiveSocket(&tempSockfd)) {
                 eprintf("Could not create active socket to test if client with alive port %d is alive\n", clientAlivePort);
-                pthread_mutex_lock(&namingServer.cleanupLock);
-                namingServer.isCleaningup = true;
-                pthread_mutex_unlock(&namingServer.cleanupLock);
+                initiateCleanup(FAILURE);
             }
+
+            // lprintf("Client_Alive : Checking if client is alive");
 
             if (!canConnectToServer(tempSockfd, clientAlivePort)) {
                 lprintf("Client_Alive: Client with alive port %d disconnected", clientAlivePort);
-                toRemoveIndices[toRemoveCount++] = i;
+                removeClient(connectedClients, itr);
+                // cleanly destroy the associated thread
+                free(itr);
             }
+
+            lprintf("Client_Alive : Client is alive");
 
             if (closeSocket(tempSockfd)) {
                 eprintf("Could not close socket\n");
-                pthread_mutex_lock(&namingServer.cleanupLock);
-                namingServer.isCleaningup = true;
-                pthread_mutex_unlock(&namingServer.cleanupLock);
+                initiateCleanup(FAILURE);
             }
-        }
 
-        int newClientCount = 0;
-        int ptr = 0;
-        for (int i = 0; i < connectedClients->count; i++) {
-            if (ptr < toRemoveCount && i == toRemoveIndices[ptr]) {  // ignore i
-                ptr++;
-            } else {
-                connectedClients->clients[newClientCount] = connectedClients->clients[i];
-                connectedClients->clientSockfds[newClientCount] = connectedClients->clientSockfds[i];
-                newClientCount++;
-            }
-        }
-        connectedClients->count = newClientCount;
-        pthread_mutex_unlock(&namingServer.connectedClientsLock);
+            lprintf("Client_Alive : Closed socket");
 
-        // printf("Client_Alive trying to lock cleanup\n");
+        }
+        pthread_mutex_unlock(&connectedClients->clientLock);
     }
+
     lprintf("Client_Alive : Cleaning up");
     return NULL;
 }

@@ -1,31 +1,37 @@
+#include <poll.h>
+
+#include "../common/networking/requests.h"
 #include "client.h"
 
 int main() {
-    Client client;
-    if (initClient(&client)) {
-        destroyClient(&client);
+    if (initClient()) {
+        destroyClient();
     }
-    
-    if (connectToNM(&client)) {
-        destroyClient(&client);
+
+    // UI here
+
+    if (connectToNM()) {
+        destroyClient();
     }
-    
-// UI here
-    
-    destroyClient(&client);
+
+    while (!inputAndSendRequest()) {
+        break;
+    }
+
+    destroyClient();
 }
 
 /*
   (Client Side)
     1. do not close nmsockfd
-    2. operation requests will be sent on nmsockfd 
+    2. operation requests will be sent on nmsockfd
     3. operation requests sent in 2 steps
-        - send type of request   
+        - send type of request
         - listens for request_type_ack (timeout)
         - send actual request
         - (block and wait for message from nm)
         - if read/write/perms/size
-            - recieve address of ss. 
+            - recieve address of ss.
             - connect to this port
             - send request type
             - send actual request
@@ -52,7 +58,7 @@ int main() {
 
     (SS side)
     1. after init, create threads for listening to client and nm seperately
-    
+
     (On client thread)
     1. wait for client to connect
     2. upon connection, recieve type of request (type can only be read/write/perms/size)

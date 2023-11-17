@@ -1,7 +1,9 @@
 #include "networking.h"
 #include <arpa/inet.h>
 #include <errno.h>
+#include <poll.h>
 #include <string.h>
+#include <stdio.h>
 
 const char* GLOBAL_IP = "127.0.0.1";
 const int CLIENT_LISTEN_PORT = 9459;
@@ -56,7 +58,7 @@ ErrorCode connectToServer(int clientSockfd, int serverPort) {
         eprintf("Could not connect to port %d, errno = %d, %s\n", serverPort, errno, strerror(errno));
         return FAILURE;
     }
-    
+
     return SUCCESS;
 }
 
@@ -69,8 +71,8 @@ bool canConnectToServer(int clientSockfd, int serverPort) {
 
     if (connect(clientSockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1) {
         return false;
-    }
-    
+    }   
+
     return true;
 }
 
@@ -97,6 +99,26 @@ ErrorCode socketSend(int sockfd, void* dataPtr, size_t bytes) {
 ErrorCode socketRecieve(int sockfd, void* dataPtr, size_t bytes) {
     if (recv(sockfd, dataPtr, bytes, 0) == -1) {
         return FAILURE;
+    }
+
+    return SUCCESS;
+}
+
+ErrorCode socketRecieveTimeout(int sockfd, void* dataPtr, size_t bytes, int millis, bool* recieved) {
+    *recieved = false;
+    struct pollfd fd;
+    fd.fd = sockfd;
+    fd.events = POLLIN;
+    int ret = poll(&fd, 1, millis);
+    switch (ret) {
+        case -1:
+            return FAILURE;
+        case 0:
+            break;
+        default:
+            recv(sockfd, dataPtr, bytes, 0);
+            *recieved = true;
+            break;
     }
 
     return SUCCESS;

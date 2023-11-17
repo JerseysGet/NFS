@@ -11,6 +11,7 @@
 #include "../common/signals/cleanup_signal.h"
 #include "./threads/for_client/client_alive_thread.h"
 #include "./threads/for_client/client_listener_thread.h"
+#include "./threads/for_client/connected_clients.h"
 #include "./threads/for_ss/ss_alive_thread.h"
 #include "./threads/for_ss/ss_listener_thread.h"
 #include "./trie/trie.h"
@@ -27,19 +28,12 @@
     } while (0);
 
 #define MAX_STORAGE_SERVERS 100
-#define MAX_CLIENTS 100
 
 typedef struct ConnectedSS {
     int count;
     SSInitRequest storageServers[MAX_STORAGE_SERVERS];
     int storageServerSockfds[MAX_STORAGE_SERVERS];
 } ConnectedSS;
-
-typedef struct ConnectedClients {
-    int count;
-    ClientInitRequest clients[MAX_CLIENTS];
-    int clientSockfds[MAX_CLIENTS];
-} ConnectedClients;
 
 typedef struct NamingServer {
     int ssListenerSockfd;            /* Socket for ss listener passive port */
@@ -50,7 +44,6 @@ typedef struct NamingServer {
 
     int clientListenerSockfd;             /* Socket for client listener passive port */
     ConnectedClients connectedClients;    /* Stores connected clients, must be locked for synchronization */
-    pthread_mutex_t connectedClientsLock; /* Lock for connectedClients */
     pthread_t clientListener;             /* Client listener thread */
     pthread_t clientAliveChecker;         /* Checks if connected clients are alive */
 

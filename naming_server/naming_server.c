@@ -29,21 +29,6 @@ void destroyConnectedSS() {
 
 void signalSuccess();
 
-ErrorCode initConnectedClients() {
-    namingServer.connectedClients.count = 0;
-    int ret;
-    if ((ret = pthread_mutex_init(&namingServer.connectedClientsLock, NULL))) {
-        eprintf("Could not initialize connected client mutex, errno = %d, %s\n", ret, strerror(ret));
-        return FAILURE;
-    }
-
-    return SUCCESS;
-}
-
-void destroyConnectedClients() {
-    pthread_mutex_destroy(&namingServer.connectedClientsLock);
-}
-
 ErrorCode initNM() {
     namingServer.ssListener = 0;
     namingServer.ssAliveChecker = 0;
@@ -76,7 +61,7 @@ ErrorCode initNM() {
         goto destroy_connected_SS;
     }
 
-    if (initConnectedClients()) {
+    if (initConnectedClients(&namingServer.connectedClients)) {
         goto destroy_SS_listener;
     }
 
@@ -90,7 +75,7 @@ ErrorCode initNM() {
     //     close(namingServer.clientListenerSockfd);
 
 destroy_connected_clients:
-    destroyConnectedClients();
+    destroyConnectedClients(&namingServer.connectedClients);
 
 destroy_SS_listener:
     close(namingServer.ssListenerSockfd);
@@ -119,6 +104,8 @@ void destroyNM() {
     JOIN_IF_CREATED(namingServer.clientListener, NULL);
     JOIN_IF_CREATED(namingServer.ssListener, NULL);
 
+    destroyConnectedClients(&namingServer.connectedClients);
+
     lprintf("Main : Cleaning up trie");
     destroyTrie();
 
@@ -129,7 +116,6 @@ void destroyNM() {
     
 
     pthread_mutex_destroy(&namingServer.connectedSSLock);
-    pthread_mutex_destroy(&namingServer.connectedClientsLock);
     pthread_mutex_destroy(&namingServer.cleanupLock);
 
     destroyEscapeHatch();

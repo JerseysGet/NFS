@@ -2,16 +2,6 @@
 
 #include "../../../common/networking/networking.h"
 
-void addClient(ConnectedClients* connectedClients, ClientInitRequest* req, int clientSockfd) {
-    connectedClients->clients[connectedClients->count] = *req;
-    connectedClients->clientSockfds[connectedClients->count] = clientSockfd;
-    connectedClients->count++;
-    if (connectedClients->count > MAX_CLIENTS) {
-        eprintf("Too many clients\n");
-        FATAL_EXIT;
-    }
-}
-
 /* Terminates naming server in case of fatal errors */
 void* clientListenerRoutine(void* arg) {
     UNUSED(arg);
@@ -39,9 +29,9 @@ void* clientListenerRoutine(void* arg) {
         lprintf("Client_listener : Recieved Passive port = %d, Alive port = %d", recievedReq.clientPassivePort, recievedReq.clientAlivePort);
 
         // printf("Client_listener trying to lock connectedClientsLock\n");
-        pthread_mutex_lock(&namingServer.connectedClientsLock);
+        pthread_mutex_lock(&connectedClients->clientLock);
         addClient(connectedClients, &recievedReq, clientSockfd);
-        pthread_mutex_unlock(&namingServer.connectedClientsLock);
+        pthread_mutex_unlock(&connectedClients->clientLock);
         // printf("Client_listener trying to lock cleanup\n");
     }
 
