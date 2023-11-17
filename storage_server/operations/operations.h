@@ -9,9 +9,11 @@
 #include<dirent.h>
 #include<sys/stat.h>
 #include<string.h>
-#include <errno.h>
+#include<errno.h>
 #include<sys/types.h>
 #include "../../common/error/error.h"
+#include "../../common/networking/requests/copy.h"
+#include "../../common/networking/networking.h"
 
 ErrorCode readFromFile(char* path, char* buffer, size_t bufferSize);
 ErrorCode writeToFile(char* path, char* buffer, size_t bufferSize);
@@ -20,8 +22,8 @@ ErrorCode createDirectory(char* path,mode_t permissions);
 ErrorCode deleteFile(char* path);
 ErrorCode deleteDirectory(char* path);
 
-// ErrorCode copyDirectory(??); TODO
-// ErrorCode copyFile(??); TODO
+ErrorCode CopySend(char* dst);
+ErrorCode CopyRecieve(char* src);
 
 ErrorCode GetFileInfo(char* path,struct stat *info);
 ErrorCode GetDirectoryInfo(char* path,struct stat *info);

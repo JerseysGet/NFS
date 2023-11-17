@@ -9,7 +9,7 @@ int main() {
     if (connectToNM(&client)) {
         destroyClient(&client);
     }
-
+    
 // UI here
     
     destroyClient(&client);
