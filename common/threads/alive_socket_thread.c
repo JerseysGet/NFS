@@ -20,14 +20,14 @@ void* aliveSocketThreadRoutine(void* arg) {
     AliveSocketThread* thread = (AliveSocketThread*)arg;
     while (!isCleaningUp()) {
         int clientfd;
-        lprintf("Alive_socket : Accpeting");
+        // lprintf("Alive_socket : Accpeting");
         
         if (acceptClient(thread->aliveSocket, &clientfd)) {
             eprintf("Could not acceptClient()\n");
             initiateCleanup(FAILURE);
             break;
         }
-        lprintf("Alive_socket : Closing");
+        // lprintf("Alive_socket : Closing");
     }
     lprintf("Alive Thread : Cleaning up");
     cleanAliveSocketThread(thread);
