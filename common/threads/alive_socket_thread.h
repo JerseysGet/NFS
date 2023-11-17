@@ -2,11 +2,12 @@
 #define __ALIVE_SOCKET_THREAD_H
 
 #include <pthread.h>
+#include <stdbool.h>
 
 #include "../error/error.h"
 
 typedef struct AliveSocketThread {
-    pthread_t thread;
+    pthread_t thread; // init this as 0
     int alivePort;
     int aliveSocket;
 } AliveSocketThread;

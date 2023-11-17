@@ -30,18 +30,22 @@ ErrorCode initClient() {
     initEscapeHatch(signalSuccess);
 
     lprintf("Main : Creating Passive Socket for Client's Alive Socket");
-    if (createPassiveSocket(&client.aliveSockfd, 0)) {
-        goto destroy_logging;
-    }
+    // if (createPassiveSocket(&client.aliveSockfd, 0)) {
+    //     goto destroy_logging;
+    // }
 
-    lprintf("Main : Getting port for Client's Alive Socket");
-    if (getPort(client.aliveSockfd, &client.aliveSockPort)) {
-        goto destroy_alivesockfd;
+    // lprintf("Main : Getting port for Client's Alive Socket");
+    // if (getPort(client.aliveSockfd, &client.aliveSockPort)) {
+    //     goto destroy_alivesockfd;
+    // }
+    lprintf("Main : Creating Alive Thread for Client's Alive Socket");
+    if (initAliveSocketThread(&client.thread)) {
+        goto destroy_logging;
     }
 
     lprintf("Main : Creating Passive Socket for Client's Passive Socket");
     if (createPassiveSocket(&client.passiveSockfd, 0)) {
-        goto destroy_alivesockfd;
+        goto destroy_aliveSocketthread;
     }
 
     lprintf("Main : Getting port for Client's Passive Socket");
@@ -62,8 +66,8 @@ ErrorCode initClient() {
 destroy_passivesockfd:
     close(client.passiveSockfd);
 
-destroy_alivesockfd:
-    close(client.aliveSockfd);
+destroy_aliveSocketthread:
+    close(client.thread.aliveSocket);
 
 destroy_logging:
     destroyEscapeHatch();
@@ -94,9 +98,11 @@ void initiateCleanup(ErrorCode exitCode) {
 
 void destroyClient() {
     lprintf("Main : Closing all sockfds in Client");
-    closeSocket(client.aliveSockfd);
+    JOIN_IF_CREATED(client.thread.thread,NULL);
     closeSocket(client.passiveSockfd);
     closeSocket(client.nmSockfd);
+    // code to cleanup and exit alive thread
+    // closeSocket(client.aliveSockfd);
     endLogging();
     destroyLogger();
     JOIN_IF_CREATED(getLoggingThread(), NULL);
@@ -111,7 +117,7 @@ ErrorCode connectToNM() {
     }
 
     ClientInitRequest req;
-    req.clientAlivePort = client.aliveSockPort;
+    req.clientAlivePort = client.thread.alivePort;
     req.clientPassivePort = client.passiveSockPort;
 
     if (sendClientRequest(client.nmSockfd, &req)) {
@@ -216,6 +222,7 @@ ErrorCode inputAndSendRequest() {
     RequestType type;
     void* request = NULL;
     while (request == NULL) request = inputRequest(&type);
+    lprintf("Main : sending RequestType..");
     if ((ret = sendRequestType(&type, client.nmSockfd))) {
         eprintf("Could not send request type\n");
         goto destroy_request;
@@ -224,24 +231,24 @@ ErrorCode inputAndSendRequest() {
     bool recievedAck;
     RequestTypeAck requestTypeAck;
     recieveRequestTypeAck(&requestTypeAck, client.nmSockfd, TIMEOUT_MILLIS, &recievedAck);
-
+    
     if (!recievedAck) {
         eprintf("RequestTypeAck timed out\n");
         ret = FAILURE;
         goto destroy_request;
     }
-
+    lprintf("Main : received RequestType ack");
     if ((ret = sendRequest(type, request, client.nmSockfd))) {
         eprintf("Could not send request\n");
         goto destroy_request;
     }
-
+    lprintf("Main : request sent");
 destroy_request:
     destroyRequest(request);
     return ret;
 }
 
 void signalSuccess() {
-    client.exitCode = SUCCESS;
+    initiateCleanup(SUCCESS);
     destroyClient();
 }

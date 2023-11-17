@@ -28,14 +28,14 @@ void* clientAliveRoutine(void* arg) {
                 free(itr);
             }
 
-            lprintf("Client_Alive : Client is alive");
+            // lprintf("Client_Alive : Client is alive");
 
             if (closeSocket(tempSockfd)) {
                 eprintf("Could not close socket\n");
                 initiateCleanup(FAILURE);
             }
 
-            lprintf("Client_Alive : Closed socket");
+            // lprintf("Client_Alive : Closed socket");
 
         }
         pthread_mutex_unlock(&connectedClients->clientLock);

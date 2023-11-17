@@ -7,9 +7,7 @@ int main() {
     if (initClient()) {
         destroyClient();
     }
-
-    // UI here
-
+    startAliveSocketThread(&client.thread);
     if (connectToNM()) {
         destroyClient();
     }
@@ -17,6 +15,7 @@ int main() {
     while (!inputAndSendRequest()) {
         break;
     }
+    while(!isCleaningUp()){}
 
     destroyClient();
 }

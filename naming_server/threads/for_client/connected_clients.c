@@ -31,7 +31,7 @@ ErrorCode initConnectedClients(ConnectedClients* connectedClients) {
 
 void destroyConnectedClients(ConnectedClients* connectedClients) {
     pthread_mutex_destroy(&connectedClients->clientLock);
-    for (ConnectedClient itr = connectedClients->front; itr != NULL; itr = itr->next) {
+    for (ConnectedClient itr = connectedClients->front; itr != NULL;) {
         ConnectedClient nxt = itr->next;
         destroyConnectedClient(itr);
         itr = nxt;
