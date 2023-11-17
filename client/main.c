@@ -41,7 +41,7 @@ int main() {
     2. on that thread, listen for request type from client
     3. send request_type_ack to that client
     4. recieve actual request from client
-    5. if read/write/perms/size search the trie for address of ss, and send it to client
+    5. if read/write/metadata search the trie for address of ss, and send it to client
     6. if create/delete/copy find the addresses of required storage servers
         - connect to the storage servers
         - send type of request
