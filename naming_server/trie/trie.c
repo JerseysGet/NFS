@@ -124,11 +124,12 @@ ErrorCode addToTrie(char* path, SSInfo ssinfo) {
 }
 
 ErrorCode search(char* path, SSInfo* ret) {
+    *ret = INVALID_SSINFO;
     TrieNode node = searchNode(path);
     if (node)
         *ret = node->ssinfo;
     else
-        return 1;
+        return EPATHNOTFOUND;
 
     return SUCCESS;
 }

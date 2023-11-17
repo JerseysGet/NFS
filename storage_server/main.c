@@ -6,11 +6,14 @@ int main() {
         destroySS(&ss);
         return FAILURE;
     }
-    
+
     if (connectToNM(&ss)) {
         destroySS(&ss);
         return FAILURE;
     }
+
+    while (1) {}
+    
 
     destroySS(&ss);
 }

@@ -10,4 +10,6 @@ typedef int ErrorCode;
 
 void eprintf(const char* format, ...);
 
+#define EPATHNOTFOUND 10
+
 #endif

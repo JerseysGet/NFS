@@ -45,6 +45,18 @@ void* clientThreadRoutine(void* arg) {
         }
         lprintf("Client Thread (Alive port = %d) : Recieved Request", client->clientInitRequest.clientAlivePort);
 
+        if (isPrivileged(reqType)) {
+
+        } else {
+            ReadRequest* castRequest = (ReadRequest*) request;
+            SSInfo ssinfo;
+            lockTrie();
+            // assuming request type == read
+            ErrorCode ret = search(castRequest->path, &ssinfo);
+            unlockTrie();
+            sendSSInfo(&ssinfo, client->clientSockfd);
+        }
+
         free(request);
     }
     cleanupClient(client);

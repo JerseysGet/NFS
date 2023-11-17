@@ -80,3 +80,11 @@ ErrorCode connectToNM(StorageServer* ss) {
     
     return SUCCESS;
 }
+
+void initiateCleanup(ErrorCode exitCode) {
+
+}
+
+bool isCleaningUp() {
+    return false;
+}

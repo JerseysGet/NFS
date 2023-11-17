@@ -6,6 +6,7 @@
 #include "../common/error/error.h"
 #include "../common/networking/networking.h"
 #include "../common/networking/nm_ss/ss_connect.h"
+#include "./threads/thread_for_client.h"
 
 typedef struct StorageServer {
     int aliveSockfd;       /* Passive socket used by NM to check if SS is alive */

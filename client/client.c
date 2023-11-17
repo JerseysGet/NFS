@@ -254,6 +254,13 @@ ErrorCode inputAndSendRequest() {
         goto destroy_request;
     }
     lprintf("Main : request sent");
+    SSInfo ssinfo;
+    if (recieveSSInfo(&ssinfo, client.nmSockfd)) {
+        eprintf("Could not recieve ssinfo\n");
+        goto destroy_request;
+    }
+
+    lprintf("Main : recieved ssinfo ssClientPort = %d, ssPassivePort = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
 destroy_request:
     destroyRequest(request);
     return ret;
@@ -262,7 +269,7 @@ destroy_request:
 void signalSuccess() {
     // printf("signalSuccess : ");
     initiateCleanup(SUCCESS);
-    usleep(1000000);
+    usleep(2000000);
     JOIN_IF_CREATED(client.thread.thread, NULL);
     destroyClient();
 }
