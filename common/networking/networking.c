@@ -6,8 +6,8 @@
 #include <stdio.h>
 
 const char* GLOBAL_IP = "127.0.0.1";
-const int CLIENT_LISTEN_PORT = 9449;
-const int SS_LISTEN_PORT = 11764;
+const int CLIENT_LISTEN_PORT = 99459;
+const int SS_LISTEN_PORT = 1176;
 
 #define MAX_CONNECTION_IN_QUEUE 10
 

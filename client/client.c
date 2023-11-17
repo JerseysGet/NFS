@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include "../common/networking/networking.h"
 
@@ -83,26 +85,35 @@ destroy_cleanup_lock:
 }
 
 bool isCleaningUp() {
+    // printf("trying to LOCK\n");
     pthread_mutex_lock(&client.cleanupLock);
+    // printf("GOT LOCK\n");
     bool ret = client.isCleaningup;
+    // printf("GOT RET\n");
     pthread_mutex_unlock(&client.cleanupLock);
+    // printf("UNLOCKED\n");
     return ret;
 }
 
 void initiateCleanup(ErrorCode exitCode) {
+    // printf("trying to lock\n");
     pthread_mutex_lock(&client.cleanupLock);
+    // printf("signal cleanup got lock\n");
     client.exitCode = exitCode;
     client.isCleaningup = true;
     pthread_mutex_unlock(&client.cleanupLock);
+    // printf("signal cleanup unlocked\n");
 }
 
 void destroyClient() {
     lprintf("Main : Closing all sockfds in Client");
-    JOIN_IF_CREATED(client.thread.thread,NULL);
+
+    shutdown(client.thread.aliveSocket, SHUT_RDWR);
+
+    lprintf("Main : Alive_socket joined");
     closeSocket(client.passiveSockfd);
     closeSocket(client.nmSockfd);
-    // code to cleanup and exit alive thread
-    // closeSocket(client.aliveSockfd);
+
     endLogging();
     destroyLogger();
     JOIN_IF_CREATED(getLoggingThread(), NULL);
@@ -231,7 +242,7 @@ ErrorCode inputAndSendRequest() {
     bool recievedAck;
     RequestTypeAck requestTypeAck;
     recieveRequestTypeAck(&requestTypeAck, client.nmSockfd, TIMEOUT_MILLIS, &recievedAck);
-    
+
     if (!recievedAck) {
         eprintf("RequestTypeAck timed out\n");
         ret = FAILURE;
@@ -249,6 +260,9 @@ destroy_request:
 }
 
 void signalSuccess() {
+    // printf("signalSuccess : ");
     initiateCleanup(SUCCESS);
+    usleep(1000000);
+    JOIN_IF_CREATED(client.thread.thread, NULL);
     destroyClient();
 }
