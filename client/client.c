@@ -1,4 +1,5 @@
 #include "client.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -11,9 +12,9 @@
         if (T) pthread_join(T, RET); \
     } while (0)
 
-Client client;
-
 void signalSuccess();
+
+Client client;
 
 ErrorCode initClient() {
     client.isCleaningup = 0;
@@ -81,7 +82,7 @@ void initiateCleanup(ErrorCode exitCode) {
 
 void destroyClient() {
     lprintf("Main : Closing all sockfds in Client");
-    
+
     shutdown(client.nmSockfd, SHUT_RDWR);
 
     shutdown(client.thread.aliveSocket, SHUT_RDWR);
@@ -124,9 +125,7 @@ void* inputRequest(RequestType* requestType) {
     printf("5. Create a file\n");
     printf("6. Create a folder\n");
     printf("7. List a folder\n");
-    printf("7. List a folder\n");
-    printf("8. Get size\n");
-    printf("9. Get permissions\n");
+    printf("8. Get metadata\n");
     scanf("%d", &option);
 
     void* ret = NULL;
@@ -177,19 +176,13 @@ void* inputRequest(RequestType* requestType) {
             *requestType = REQUEST_LIST;
             ret = calloc(1, sizeof(ListRequest));
             printf("Enter folder path to list: ");
-            scanf("%s",((SizeRequest*)ret)->path);
+            scanf("%s", ((ListRequest*)ret)->path);
             break;
         case 8:
             *requestType = REQUEST_METADATA;
-            ret = calloc(1, sizeof(SizeRequest));
+            ret = calloc(1, sizeof(MDRequest));
             printf("Enter file/folder path to get size: ");
-            scanf("%s", ((SizeRequest*)ret)->path);
-            break;
-        case 9:
-            *requestType = REQUEST_METADATA;
-            ret = calloc(1, sizeof(PermRequest));
-            printf("Enter file/folder path to get permissions: ");
-            scanf("%s", ((SizeRequest*)ret)->path);
+            scanf("%s", ((MDRequest*)ret)->path);
             break;
         default:
             printf("Invalid option\n");
@@ -225,15 +218,14 @@ ErrorCode inputAndSendRequest() {
         goto destroy_request;
     }
     lprintf("Main : request sent");
-    if(isPrivileged(type)){
+    if (isPrivileged(type)) {
         FeedbackAck fdAck;
-        if(recieveFeedbackAck(&fdAck,client.nmSockfd)) {
+        if (recieveFeedbackAck(&fdAck, client.nmSockfd)) {
             eprintf("Could not Receive feedbackAck from SS");
             ret = FAILURE;
             goto destroy_request;
         }
-    }
-    else {
+    } else {
         SSInfo ssinfo;
         if (recieveSSInfo(&ssinfo, client.nmSockfd)) {
             eprintf("Could not recieve ssinfo\n");
@@ -241,67 +233,73 @@ ErrorCode inputAndSendRequest() {
             goto destroy_request;
         }
         lprintf("Main : recieved ssinfo ssClientPort = %d, ssPassivePort = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
+        if (ssinfo.ssClientPort == -1) {
+            eprintf("Path does not exist in NM");
+            ret = FAILURE;
+            goto destroy_request;
+        }
+
         int sockfd;
-        if(createActiveSocket(&sockfd)){
+        if (createActiveSocket(&sockfd)) {
             ret = FAILURE;
             goto destroy_request;
         }
         lprintf("Main : Active Socket Created");
-        if(connectToServer(sockfd, ssinfo.ssClientPort)){
+        if (connectToServer(sockfd, ssinfo.ssClientPort)) {
             ret = FAILURE;
             goto destroy_request;
         }
         lprintf("Main : Connected to SS");
-        if((ret = sendRequestType(&type,sockfd))){
+        if ((ret = sendRequestType(&type, sockfd))) {
             goto destroy_request;
         }
         lprintf("Main : RequestType sent to SS");
         bool RecAck;
         RequestTypeAck typeAck;
-        recieveRequestTypeAck(&typeAck,sockfd,TIMEOUT_MILLIS,&RecAck);
+        recieveRequestTypeAck(&typeAck, sockfd, TIMEOUT_MILLIS, &RecAck);
 
-        if(!RecAck){
+        if (!RecAck) {
             eprintf("RequestTypeAck timed out\n");
             ret = FAILURE;
             goto destroy_request;
         }
         lprintf("Main : RequestType Ack received");
-        
-        if((ret = sendRequest(type,request,sockfd))){
+
+        if ((ret = sendRequest(type, request, sockfd))) {
             eprintf("Could not send Request to SS");
             goto destroy_request;
         }
         lprintf("Main : Request sent");
-        switch(type) {
+        switch (type) {
             case REQUEST_WRITE:
                 break;
             case REQUEST_READ:
-                if((ret = ReadResponseHandler(sockfd))){
+                if ((ret = ReadResponseHandler(sockfd))) {
                     ret = FAILURE;
                     goto destroy_request;
                 }
                 break;
             case REQUEST_METADATA:
-                if((ret = MetaDataResponseHandler(sockfd))){
-                    ret = FAILURE;
-                    goto destroy_request;
-                }  
-                break;  
-            case REQUEST_LIST:
-                if((ret = ListResponseHandler(sockfd))){
+                if ((ret = MetaDataResponseHandler(sockfd))) {
                     ret = FAILURE;
                     goto destroy_request;
                 }
                 break;
-            default:   
+            case REQUEST_LIST:
+                if ((ret = ListResponseHandler(sockfd))) {
+                    ret = FAILURE;
+                    goto destroy_request;
+                }
+                break;
+            default:
         }
         FeedbackAck fdAck;
-        if(recieveFeedbackAck(&fdAck,client.nmSockfd)) {
+        if (recieveFeedbackAck(&fdAck, client.nmSockfd)) {
             eprintf("Could not receive Write feedbackAck");
             ret = FAILURE;
             goto destroy_request;
         }
-        lprintf("Main : FeedbackAck Received for %s : %d",REQ_TYPE_TO_STRING[type],fdAck);
+        lprintf("Main : FeedbackAck Received for %s : %d", REQ_TYPE_TO_STRING[type], fdAck);
     }
     return SUCCESS;
 
@@ -310,11 +308,9 @@ destroy_request:
     return ret;
 }
 
-
 void destroyRequest(void* request) {
     free(request);
 }
-
 
 void signalSuccess() {
     client.isCleaningup = 1;

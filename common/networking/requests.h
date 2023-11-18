@@ -11,15 +11,11 @@
 #include "requests/copy.h"
 #include "requests/create.h"
 #include "requests/delete.h"
-#include "requests/permission.h"
+#include "requests/list.h"
+#include "requests/metadata.h"
 #include "requests/read.h"
 #include "requests/request_type.h"
-#include "requests/size.h"
 #include "requests/write.h"
-#include "requests/metadata.h"
-#include "requests/list.h"
-
-
 
 ErrorCode sendRequestType(RequestType* requestType, int sockfd);
 

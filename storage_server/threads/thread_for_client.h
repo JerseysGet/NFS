@@ -3,9 +3,10 @@
 
 #include <pthread.h>
 
-#include "../../common/networking/requests.h"
 #include "../../common/networking/ack/feedback_ack.h"
 #include "../../common/networking/ack/request_type_ack.h"
+#include "../../common/networking/requests.h"
+#include "../../common/print/logging.h"
 #include "../operations/operations.h"
 
 typedef struct ThreadForClient {
@@ -14,7 +15,7 @@ typedef struct ThreadForClient {
     int clientSockPort; /* Port for clientSockfd */
 } ThreadForClient;
 
-void initThreadForClient(ThreadForClient* thread);
+ErrorCode initThreadForClient(ThreadForClient* thread);
 void startThreadForClient(ThreadForClient* thread);
-
+bool isCleaningup();
 #endif

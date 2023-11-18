@@ -19,6 +19,6 @@ typedef enum RequestType {
 
 bool isPrivileged(RequestType type);
 
-extern const char* const REQ_TYPE_TO_STRING[8];
+extern const char* const REQ_TYPE_TO_STRING[7];
 
 #endif

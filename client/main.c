@@ -1,7 +1,7 @@
 #include <poll.h>
 
-#include "../common/networking/requests.h"
 #include "client.h"
+#include "../common/networking/requests.h"
 
 int main() {
     if (initClient()) {
@@ -15,7 +15,7 @@ int main() {
     while (!inputAndSendRequest()) {
         break;
     }
-    while(!isCleaningUp()){
+    while (!isCleaningUp()) {
         // printf("is cleaing up : ");
     }
     destroyClient();

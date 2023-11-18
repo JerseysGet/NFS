@@ -11,6 +11,7 @@
 #include "../common/print/logging.h"
 #include "../common/signals/cleanup_signal.h"
 #include "../common/threads/alive_socket_thread.h"
+#include "client_requests.h"
 
 typedef struct Client {
     int passiveSockfd;   /* Temporary */
@@ -18,8 +19,6 @@ typedef struct Client {
 
     int nmSockfd; /* To initialize & communicate with nm */
     AliveSocketThread thread;
-    // int aliveSockfd;   /* Passive socket used by NM to check if client is alive */
-    // int aliveSockPort; /* Port for aliveSockfd */
 
     /* Cleanup stuff */
     sig_atomic_t isCleaningup;
@@ -27,6 +26,7 @@ typedef struct Client {
 } Client;
 
 extern Client client;
+
 ErrorCode initClient();
 void destroyClient();
 ErrorCode connectToNM();
@@ -39,4 +39,6 @@ void destroyRequest(void* request);
 
 ErrorCode inputAndSendRequest();
 void signalSuccess();
+void initiateCleanup(ErrorCode exitCode);
+
 #endif

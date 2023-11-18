@@ -27,12 +27,13 @@ ErrorCode CopyRecieve(char* src);
 
 ErrorCode GetFileInfo(char* path,struct stat *info);
 ErrorCode GetDirectoryInfo(char* path,struct stat *info);
-ErrorCode IsDirectory(char* path);
+bool IsDirectory(char* path);
 ErrorCode GetDirectorySize(char* path,int* size);
 
 
 ErrorCode ExecuteWrite(WriteRequest* Req);
-ErrorCode ExecuteRead(ReadRequest* Req,int clientfd);
+ErrorCode ExecuteRead(ReadRequest* Req, int clientfd);
+ErrorCode ExecuteList(ListRequest* Req, int clientfd);
 ErrorCode ExecuteMD(MDRequest* Req,int clientfd);
 ErrorCode ExecuteRequest(RequestType reqType,void* request,int clientfd);
 

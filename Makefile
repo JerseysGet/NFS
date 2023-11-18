@@ -30,9 +30,7 @@ COMMON_OBJECTS += common/networking/requests/request_type.o
 COMMON_OBJECTS += common/networking/requests/copy.o
 COMMON_OBJECTS += common/networking/requests/create.o
 COMMON_OBJECTS += common/networking/requests/delete.o
-COMMON_OBJECTS += common/networking/requests/permission.o
 COMMON_OBJECTS += common/networking/requests/read.o
-COMMON_OBJECTS += common/networking/requests/size.o
 COMMON_OBJECTS += common/networking/requests/write.o
 COMMON_OBJECTS += common/networking/requests/metadata.o
 COMMON_OBJECTS += common/networking/requests/list.o
@@ -55,7 +53,6 @@ SS_OBJECTS += storage_server/threads/thread_for_client.o
 CLIENT_OBJECTS = client/client.o
 CLIENT_OBJECTS += client/client_requests.o
 
-
 nm: naming_server.out
 	./naming_server.out
 
@@ -70,13 +67,13 @@ naming_server.out: $(COMMON_OBJECTS) $(NM_OBJECTS)
 	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(NM_OBJECTS) naming_server/main.c -o $@
 
 storage_server.out: $(COMMON_OBJECTS) $(SS_OBJECTS)
-	$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(SS_OBJECTS) storage_server/main.c -o $@
+	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(SS_OBJECTS) storage_server/main.c -o $@
 
 client.out: $(COMMON_OBJECTS) $(CLIENT_OBJECTS)
-	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(CLIENT_OBJECTS) client/main.c -o $@
+	$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(CLIENT_OBJECTS) client/main.c -o $@
 
 %.o:%.c
-	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
+	$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
 
 clean_logs:
 	@find . -type f -iname \*.log -delete

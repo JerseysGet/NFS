@@ -1,6 +1,7 @@
 #include "storage_server.h"
 
 #include <stdio.h>
+#include <sys/socket.h>
 
 #include "../common/networking/networking.h"
 #include "../common/print/logging.h"
@@ -12,9 +13,13 @@
 
 StorageServer ss;
 
+void cleanupSuccess();
+
 ErrorCode initSS() {
     ss.isCleaningup = 0;
     ss.exitCode = 0;
+
+    initEscapeHatch(cleanupSuccess);
 
     if (initLogger("logs/storage_server/", false)) {
         eprintf("Could not create log file\n");
@@ -23,39 +28,41 @@ ErrorCode initSS() {
 
     if (startLogging()) {
         eprintf("Could not start logging\n");
-        return FAILURE;
+        goto destroy_logger;
     }
 
     if (initAliveSocketThread(&ss.aliveThread)) {
-        return FAILURE;
+        goto destroy_logging;
     }
 
-
-    lprintf("Main : Creating Passive Socket for SS's Client Socket");
-    if (createPassiveSocket(&ss.clientSockfd, 0)) {
-        return FAILURE;
-    }
-
-    if (getPort(ss.clientSockfd, &ss.clientSockPort)) {
-        return FAILURE;
+    if (initThreadForClient(&ss.cltThread)) {
+        goto destroy_alive_socket_thread;
     }
 
     lprintf("Main : Creating Passive Socket for SS's Passive Socket");
     if (createPassiveSocket(&ss.passiveSockfd, 0)) {
-        return FAILURE;
-    } else {
-        lprintf("Main : Getting port for SS's Passive Socket");
-        if (getPort(ss.passiveSockfd, &ss.passiveSockPort))
-            return FAILURE;
+        goto destroy_thread_for_client;
     }
+    lprintf("Main : Getting port for SS's Passive Socket");
+
+    if (getPort(ss.passiveSockfd, &ss.passiveSockPort)) {
+        goto destroy_passive_socket;
+    }
+
     inputPaths(ss);
     lprintf("Main : Creating Active Socket for SS's NM Socket");
     if (createActiveSocket(&ss.nmSockfd))
-        return FAILURE;
+        goto destroy_passive_socket;
 
     return SUCCESS;
 
+    // destroy_active_socket:
+    //     close(ss.nmSockfd);
 
+destroy_passive_socket:
+    close(ss.passiveSockfd);
+
+destroy_thread_for_client:
 
 destroy_alive_socket_thread:
 
@@ -70,11 +77,13 @@ destroy_logger:
 
 void destroySS() {
     lprintf("Main : Closing all sockfds of SS");
+
+    shutdown(ss.aliveThread.aliveSocket, SHUT_RDWR);
+    JOIN_IF_CREATED(ss.aliveThread.thread, NULL);
+
     endLogging();
     destroyLogger();
-    closeSocket(ss->aliveSockfd);
-    closeSocket(ss->nmSockfd);
-    closeSocket(ss.clientSockfd);
+    JOIN_IF_CREATED(getLoggingThread(), NULL);
     closeSocket(ss.nmSockfd);
     exit(ss.exitCode);
 }
@@ -91,15 +100,10 @@ ErrorCode inputPaths() {
 
 ErrorCode connectToNM() {
     SSInitRequest req;
-    req.paths = ss->paths;
-    req.SSAlivePort = ss->aliveSockPort;
-    req.SSPassivePort = ss->passiveSockPort;
-    req.SSClientPort = ss->cltThread.clientSockPort;
-    connectToServer(ss->nmSockfd, SS_LISTEN_PORT);
-    if (sendSSRequest(ss->nmSockfd, &req)) {
     req.paths = ss.paths;
-    req.SSClientPort = ss.clientSockPort;
+    req.SSAlivePort = ss.aliveThread.alivePort;
     req.SSPassivePort = ss.passiveSockPort;
+    req.SSClientPort = ss.cltThread.clientSockPort;
     connectToServer(ss.nmSockfd, SS_LISTEN_PORT);
     if (sendSSRequest(ss.nmSockfd, &req)) {
         return FAILURE;
@@ -111,15 +115,13 @@ ErrorCode connectToNM() {
 void initiateCleanup(ErrorCode exitCode) {
     ss.exitCode = exitCode;
     ss.isCleaningup = 1;
-void initiateCleanup(ErrorCode exitCode){
-
 }
 
 bool isCleaningUp() {
     return false;
 }
 
-void signalSuccess() {
+void cleanupSuccess() {
     ss.isCleaningup = 1;
     destroySS();
 }
