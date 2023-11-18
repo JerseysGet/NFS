@@ -75,6 +75,7 @@ void* clientThreadRoutine(void* arg) {
             // assuming request type == read
             ErrorCode ret = search(castRequest->path, &ssinfo);
             unlockTrie();
+            lprintf("Sending ssinfo with ssclientInfo = %d, sspassiveport = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
             sendSSInfo(&ssinfo, client->clientSockfd);
         }
 

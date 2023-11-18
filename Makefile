@@ -46,12 +46,14 @@ NM_OBJECTS += naming_server/trie/trie.o
 NM_OBJECTS += naming_server/threads/for_client/connected_clients.o
 NM_OBJECTS += naming_server/threads/for_client/client_handler_thread.o
 
-SS_OBJECTS = storage_server/storage_server.c
-SS_OBJECTS += storage_server/operations/np_operations.c
-SS_OBJECTS += storage_server/operations/p_operations.c
-SS_OBJECTS += storage_server/threads/thread_for_client.c
+SS_OBJECTS = storage_server/storage_server.o
+SS_OBJECTS += storage_server/operations/np_operations.o
+SS_OBJECTS += storage_server/operations/p_operations.o
+SS_OBJECTS += storage_server/threads/thread_for_client.o
 
-CLIENT_OBJECTS = client/client.c
+CLIENT_OBJECTS = client/client.o
+CLIENT_OBJECTS = client/client_requests.o
+
 
 nm: naming_server.out
 	./naming_server.out
@@ -67,7 +69,7 @@ naming_server.out: $(COMMON_OBJECTS) $(NM_OBJECTS)
 	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(NM_OBJECTS) naming_server/main.c -o $@
 
 storage_server.out: $(COMMON_OBJECTS) $(SS_OBJECTS)
-	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(SS_OBJECTS) storage_server/main.c -o $@
+	$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(SS_OBJECTS) storage_server/main.c -o $@
 
 client.out: $(COMMON_OBJECTS) $(CLIENT_OBJECTS)
 	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(CLIENT_OBJECTS) client/main.c -o $@

@@ -205,62 +205,6 @@ void destroyRequest(void* request) {
     free(request);
 }
 
-ErrorCode inputAndSendRequest() {
-    ErrorCode ret = SUCCESS;
-    RequestType type;
-    void* request = NULL;
-    while (request == NULL) request = inputRequest(&type);
-    lprintf("Main : sending RequestType..");
-    if ((ret = sendRequestType(&type, client.nmSockfd))) {
-        eprintf("Could not send request type\n");
-        goto destroy_request;
-    }
-
-    bool recievedAck;
-    RequestTypeAck requestTypeAck;
-    recieveRequestTypeAck(&requestTypeAck, client.nmSockfd, TIMEOUT_MILLIS, &recievedAck);
-
-    if (!recievedAck) {
-        eprintf("RequestTypeAck timed out\n");
-        ret = FAILURE;
-        goto destroy_request;
-    }
-    lprintf("Main : received RequestType ack");
-    if ((ret = sendRequest(type, request, client.nmSockfd))) {
-        eprintf("Could not send request\n");
-        goto destroy_request;
-    }
-    lprintf("Main : request sent");
-    SSInfo ssinfo;
-    if (recieveSSInfo(&ssinfo, client.nmSockfd)) {
-        eprintf("Could not recieve ssinfo\n");
-        goto destroy_request;
-    }
-    lprintf("Main : recieved ssinfo ssClientPort = %d, ssPassivePort = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
-    int sockfd;
-    createActiveSocket(&sockfd);
-    printf("Connected to SS\n");
-
-    connectToServer(sockfd,ssinfo.ssClientPort);
-    sendRequestType(&type,sockfd);
-    printf("Sent Requesttype\n");
-    
-    bool RecAck;
-    RequestTypeAck typeAck;
-    recieveRequestTypeAck(&typeAck,sockfd,TIMEOUT_MILLIS,&RecAck);
-    printf("received Requesttype Ack:%d\n",RecAck);
-
-    sendRequest(type,request,sockfd);
-    printf("sent Request\n");
-
-    FeedbackAck fdAck;
-    recieveFeedbackAck(&fdAck,sockfd);
-    printf("received feedback :%d\n",fdAck.errorCode);
-
-destroy_request:
-    destroyRequest(request);
-    return ret;
-}
 
 void signalSuccess() {
     client.isCleaningup = 1;
