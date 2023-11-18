@@ -24,8 +24,6 @@ bool isPrivileged(RequestType type) {
         case REQUEST_WRITE:
         case REQUEST_METADATA:
         case REQUEST_LIST:
-        // case REQUEST_SIZE:
-        // case REQUEST_PERMISSION:
             return false;
     }
 
