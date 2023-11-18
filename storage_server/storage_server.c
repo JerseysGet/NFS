@@ -24,14 +24,7 @@ ErrorCode initSS(StorageServer* ss) {
         if (getPort(ss->aliveSockfd, &ss->aliveSockPort))
             return FAILURE;
     }
-    lprintf("Main : Creating Passive Socket for SS's Client Socket");
-    if (createPassiveSocket(&ss->clientSockfd, 0)) {
-        return FAILURE;
-    } else {
-        lprintf("Main : Getting port for SS's Client Socket");
-        if (getPort(ss->clientSockfd, &ss->clientSockPort))
-            return FAILURE;
-    }
+
     lprintf("Main : Creating Passive Socket for SS's Passive Socket");
     if (createPassiveSocket(&ss->passiveSockfd, 0)) {
         return FAILURE;
@@ -53,7 +46,6 @@ void destroySS(StorageServer* ss) {
     endLogging();
     destroyLogger();
     closeSocket(ss->aliveSockfd);
-    closeSocket(ss->clientSockfd);
     closeSocket(ss->nmSockfd);
 }
 
@@ -71,8 +63,8 @@ ErrorCode connectToNM(StorageServer* ss) {
     SSInitRequest req;
     req.paths = ss->paths;
     req.SSAlivePort = ss->aliveSockPort;
-    req.SSClientPort = ss->clientSockPort;
     req.SSPassivePort = ss->passiveSockPort;
+    req.SSClientPort = ss->cltThread.clientSockPort;
     connectToServer(ss->nmSockfd, SS_LISTEN_PORT);
     if (sendSSRequest(ss->nmSockfd, &req)) {
         return FAILURE;
@@ -81,7 +73,9 @@ ErrorCode connectToNM(StorageServer* ss) {
     return SUCCESS;
 }
 
-void initiateCleanup(ErrorCode exitCode);
+void initiateCleanup(ErrorCode exitCode){
+
+}
 
 bool isCleaningUp() {
     return false;
