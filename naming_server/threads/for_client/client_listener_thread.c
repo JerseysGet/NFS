@@ -8,7 +8,7 @@ void* clientListenerRoutine(void* arg) {
     ConnectedClients* connectedClients = &namingServer.connectedClients;
     while (!isCleaningUp()) {
         lprintf("Client_listener : Waiting for client...");
-        
+
         int clientSockfd;
         if (acceptClient(namingServer.clientListenerSockfd, &clientSockfd)) {
             initiateCleanup(SUCCESS);

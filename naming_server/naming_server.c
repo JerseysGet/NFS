@@ -127,7 +127,6 @@ void initiateCleanup(ErrorCode exitCode) {
     namingServer.exitCode = exitCode;
     namingServer.isCleaningUp = true;
 }
-
 void signalSuccess() {
     initiateCleanup(SUCCESS);
     destroyNM();

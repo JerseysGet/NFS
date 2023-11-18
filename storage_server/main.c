@@ -1,7 +1,6 @@
 #include "storage_server.h"
 
 int main() {
-    StorageServer ss;
     if (initSS(&ss)) {
         destroySS(&ss);
         return FAILURE;
