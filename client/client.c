@@ -221,7 +221,7 @@ ErrorCode inputAndSendRequest() {
     if (isPrivileged(type)) {
         FeedbackAck fdAck;
         if (recieveFeedbackAck(&fdAck, client.nmSockfd)) {
-            eprintf("Could not Receive feedbackAck from SS");
+            eprintf("Could not Receive feedbackAck from SS\b");
             ret = FAILURE;
             goto destroy_request;
         }
@@ -234,7 +234,7 @@ ErrorCode inputAndSendRequest() {
         }
         lprintf("Main : recieved ssinfo ssClientPort = %d, ssPassivePort = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
         if (ssinfo.ssClientPort == -1) {
-            eprintf("Path does not exist in NM");
+            eprintf("Path does not exist in NM\n");
             ret = FAILURE;
             goto destroy_request;
         }
@@ -266,7 +266,7 @@ ErrorCode inputAndSendRequest() {
         lprintf("Main : RequestType Ack received");
 
         if ((ret = sendRequest(type, request, sockfd))) {
-            eprintf("Could not send Request to SS");
+            eprintf("Could not send Request to SS\n");
             goto destroy_request;
         }
         lprintf("Main : Request sent");
@@ -295,7 +295,7 @@ ErrorCode inputAndSendRequest() {
         }
         FeedbackAck fdAck;
         if (recieveFeedbackAck(&fdAck, client.nmSockfd)) {
-            eprintf("Could not receive Write feedbackAck");
+            eprintf("Could not receive Write feedbackAck\n");
             ret = FAILURE;
             goto destroy_request;
         }

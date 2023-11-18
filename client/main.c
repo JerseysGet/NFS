@@ -12,8 +12,9 @@ int main() {
         destroyClient();
     }
 
-    while (!inputAndSendRequest()) {
-        break;
+    while (!isCleaningUp()) {
+        printf("redo\n\n");
+        inputAndSendRequest();
     }
     while (!isCleaningUp()) {
         // printf("is cleaing up : ");
