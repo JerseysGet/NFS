@@ -9,7 +9,7 @@ COMMON_C_FLAGS += -Wlogical-op
 COMMON_C_FLAGS += -Wfloat-equal
 COMMON_C_FLAGS += -Wno-format-overflow
 
-# DEBUG_FLAGS = -fsanitize=address,undefined,pointer-compare
+DEBUG_FLAGS = -fsanitize=address,undefined,pointer-compare
 DEBUG_FLAGS += -ggdb3
 DEBUG_FLAGS += -ftrapv
 DEBUG_FLAGS += -fstack-protector
@@ -70,10 +70,10 @@ storage_server.out: $(COMMON_OBJECTS) $(SS_OBJECTS)
 	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(SS_OBJECTS) storage_server/main.c -o $@
 
 client.out: $(COMMON_OBJECTS) $(CLIENT_OBJECTS)
-	$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(CLIENT_OBJECTS) client/main.c -o $@
+	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) $(COMMON_OBJECTS) $(CLIENT_OBJECTS) client/main.c -o $@
 
 %.o:%.c
-	$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
+	@$(CC) $(COMMON_C_FLAGS) $(DEBUG_FLAGS) $(BUILD_FLAGS) -c $^ -o $@
 
 clean_logs:
 	@find . -type f -iname \*.log -delete

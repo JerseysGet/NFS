@@ -49,9 +49,21 @@ int main() {
     3. send request_type_ack to that client
     4. recieve actual request from client
     5. if read/write/metadata search the trie for address of ss, and send it to client
-    6. if create/delete/copy find the addresses of required storage servers
-        - connect to the storage servers
-        - send type of request
+    6. if create/delete/copy 
+        - find the addresses of required storage server(s)
+        - connect to the passive port(s) of the storage servers(s), open a new active sockfd
+        - add the request and sockfd to a list
+        
+    (SS Side)
+        - listen for connections on passive port
+        - create a new thread for each connection (request)
+            - in this thread, recieve request type
+            - recieve request
+            - execute request
+            - send feedback ack to connecter (could be nm or ss)
+
+        - iterate throught the list
+        - listen for feedbackcks
         - send actual request from storageServerSockfds[]
         - block that thread and wait for feedback from ss
         - disconnect from ss

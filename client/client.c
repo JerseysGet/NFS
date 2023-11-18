@@ -218,6 +218,35 @@ ErrorCode inputAndSendRequest() {
         goto destroy_request;
     }
     lprintf("Main : request sent");
+
+    if (type == REQUEST_LIST) {
+        ListResponse response;
+        if (socketRecieve(client.nmSockfd, &response, sizeof(ListResponse))) {
+            eprintf("Could not recieve list response\n");
+            ret = FAILURE;
+            goto destroy_request;
+        }
+
+        FeedbackAck ack;
+        if (recieveFeedbackAck(&ack, client.nmSockfd)) {
+            eprintf("Could not Receive feedbackAck from SS\b");
+            ret = FAILURE;
+            goto destroy_request;
+        }
+
+        if (ack.errorCode == EPATHNOTFOUND) {
+            eprintf("Path does not exist in NM\n");
+            goto destroy_request;
+        }
+
+        printf("%d Children\n", response.list_cnt);
+        for(int i = 0; i < response.list_cnt; i++) {
+            printf("\t%s\n", response.list[i]);
+        }
+
+        goto destroy_request;
+    }
+
     if (isPrivileged(type)) {
         FeedbackAck fdAck;
         if (recieveFeedbackAck(&fdAck, client.nmSockfd)) {
@@ -235,7 +264,6 @@ ErrorCode inputAndSendRequest() {
         lprintf("Main : recieved ssinfo ssClientPort = %d, ssPassivePort = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
         if (ssinfo.ssClientPort == -1) {
             eprintf("Path does not exist in NM\n");
-            ret = FAILURE;
             goto destroy_request;
         }
 
@@ -301,7 +329,6 @@ ErrorCode inputAndSendRequest() {
         }
         lprintf("Main : FeedbackAck Received for %s : %d", REQ_TYPE_TO_STRING[type], fdAck);
     }
-    return SUCCESS;
 
 destroy_request:
     destroyRequest(request);

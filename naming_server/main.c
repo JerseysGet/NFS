@@ -13,7 +13,7 @@ int main() {
     createClientAliveThread(&namingServer.clientAliveChecker);
 
     while (!isCleaningUp()) {
-        usleep(500000);
+        // usleep(500000);
     }
     // pthread_join(namingServer.ssListener, NULL);
     // pthread_join(namingServer.ssAliveChecker, NULL);

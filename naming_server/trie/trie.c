@@ -167,6 +167,31 @@ void destroySSFromTrieHelper(TrieNode node, SSInfo ssinfo) {
     if (SSInfoEqual(&node->ssinfo, &ssinfo)) deleteNodeFromTrie(node);
 }
 
+char** getChildren(char* path, int* count) {
+    *count = 0;
+    TrieNode node = searchNode(path);
+    if (node == NULL) {
+        *count = -1;
+        return NULL;
+    }
+
+    for (TrieNode itr = node->firstChild; itr != NULL;) {
+        TrieNode nxt = itr->next;
+        *count += 1;
+        itr = nxt;
+    }
+
+    char** ret = malloc(sizeof(char*) * *count);
+
+    int i = 0;
+    for (TrieNode itr = node->firstChild; itr != NULL; i++) {
+        TrieNode nxt = itr->next;
+        ret[i] = strdup(itr->token);
+        itr = nxt;
+    }
+    return ret;
+}
+
 ErrorCode deleteSSFromTrie(SSInfo ssinfo) {
     destroySSFromTrieHelper(trie, ssinfo);
     return SUCCESS;

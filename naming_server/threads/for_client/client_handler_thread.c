@@ -45,6 +45,29 @@ void* clientThreadRoutine(void* arg) {
             break;
         }
         lprintf("Client Thread (Alive port = %d) : Recieved Request", client->clientInitRequest.clientAlivePort);
+        
+        /* LIST REQUEST HANDLED DIFFERENT FROM REST */
+        if (reqType == REQUEST_LIST) {
+            ListRequest* castRequest = (ListRequest*) request;
+            ListResponse response;
+            response.list_cnt = 0;
+            lockTrie();
+            char** ret = getChildren(castRequest->path, &response.list_cnt);
+            unlockTrie();
+            for (int i = 0; i < response.list_cnt; i++) {
+                strcpy(response.list[i], ret[i]);
+            }
+            if (ret) {
+                for (int i = 0; i < response.list_cnt; i++) free(ret[i]); 
+                free(ret);
+            }
+            socketSend(client->clientSockfd, &response, sizeof(ListResponse));
+            FeedbackAck ack;
+            ack.errorCode = 0;
+            if (ret == NULL) ack.errorCode = EPATHNOTFOUND;
+            sendFeedbackAck(&ack, client->clientSockfd);
+            goto free_request;
+        }
 
         if (isPrivileged(reqType)) {
             // assuming request type == create
@@ -78,7 +101,7 @@ void* clientThreadRoutine(void* arg) {
             lprintf("Sending ssinfo with ssclientInfo = %d, sspassiveport = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
             sendSSInfo(&ssinfo, client->clientSockfd);
         }
-
+        free_request:
         free(request);
     }
     cleanupClient(client);

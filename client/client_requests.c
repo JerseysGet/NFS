@@ -47,7 +47,7 @@ ErrorCode ReadResponseHandler(int sockfd) {
 ErrorCode MetaDataResponseHandler(int sockfd) {
     struct stat st;
     if (socketRecieve(sockfd, &st, sizeof(struct stat))) {
-        eprintf("Could not receive metadata");
+        eprintf("Could not receive metadata\n");
         return FAILURE;
     }
     lprintf("Main : MetaData Received");
@@ -58,9 +58,10 @@ ErrorCode MetaDataResponseHandler(int sockfd) {
 ErrorCode ListResponseHandler(int sockfd) {
     ListResponse Response;
     if (socketRecieve(sockfd, &Response, sizeof(ListResponse))) {
-        eprintf("Could not receive list");
+        eprintf("Could not receive list\n");
         return FAILURE;
     }
+    
     lprintf("Main : List Received");
 
     for (int i = 0; i < Response.list_cnt; ++i) {

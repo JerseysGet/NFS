@@ -51,7 +51,7 @@ ErrorCode GetDirectorySize(char* path, int* size) {
             eprintf("Could not close directry, errno = %d, %s\n", errno, strerror(errno));
             return FAILURE;
         }
-        /// should i add directory size also
+        // should i add directory size also
     } else {
         struct stat st;
         if (stat(path, &st) != 0) {
@@ -102,10 +102,9 @@ ErrorCode ExecuteWrite(WriteRequest* Req) {
     return SUCCESS;
 }
 
-ErrorCode ExecuteRead(ReadRequest* Req,int clientfd) {
-    printf("1.\n");
+ErrorCode ExecuteRead(ReadRequest* Req, int clientfd) {
     char buffer[1024];
-    memset(buffer,'\0',1024);
+    memset(buffer, '\0', 1024);
     int fd;
 
     if ((fd = open(Req->path, O_RDONLY)) == -1) {
@@ -113,27 +112,24 @@ ErrorCode ExecuteRead(ReadRequest* Req,int clientfd) {
         return FAILURE;
     }
 
-    printf("2.\n");
     ReadPacket packet;
-    while(read(fd, buffer, 1024) > 0){
-        printf("3.\n");
-        if(sendDataPacket(buffer,clientfd)){
+    while (read(fd, buffer, 1024) > 0) {
+        if (sendDataPacket(buffer, clientfd)) {
             close(fd);
             return FAILURE;
         }
-        memset(buffer,'\0',1024);
+        memset(buffer, '\0', 1024);
     }
     close(fd);
-    printf("4.\n");
-    if(send_STOP_PKT(clientfd)){
+    if (send_STOP_PKT(clientfd)) {
         return FAILURE;
     }
-    printf("5.\n");
     return SUCCESS;
 }
 
 ErrorCode ExecuteList(ListRequest* Req, int clientfd) {
-    return SUCCESS;
+    char* path = Req->path;
+    
 }
 
 ErrorCode ExecuteMD(MDRequest* Req, int clientfd) {

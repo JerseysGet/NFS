@@ -6,18 +6,17 @@
 #include "../../error/error.h"
 #include "../requests.h"
 
-#define MAX_PATH_LENGTH 256
+#define MAX_PATH_LENGTH 128
 #define MAX_ENTITY_COUNT 128
 
-typedef struct ListRequest{
+typedef struct ListRequest {
     char path[MAX_PATH_LENGTH];
-}ListRequest;
+} ListRequest;
 
-typedef struct ListResponse{
-    char list[MAX_ENTITY_COUNT][MAX_PATH_LENGTH];
+typedef struct ListResponse {
     int list_cnt;
-}ListResponse;
-
+    char list[MAX_ENTITY_COUNT][MAX_PATH_LENGTH];
+} ListResponse;
 
 ErrorCode sendListRequest(ListRequest* request, int sockfd);
 ErrorCode recieveListRequest(ListRequest* request, int sockfd);

@@ -39,6 +39,11 @@ ErrorCode deleteFromTrie(char* path);
 ErrorCode deleteSSFromTrie(SSInfo ssinfo);
 
 /*
+
+*/
+char** getChildren(char* path, int* count);
+
+/*
     Should have exactly one thread calling this, and no threads waiting on lock. Should not hold the lock while calling destroyTrie()
 */
 void destroyTrie();

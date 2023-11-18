@@ -12,8 +12,6 @@ typedef enum RequestType {
     REQUEST_READ,
     REQUEST_WRITE,
     REQUEST_METADATA,
-    // REQUEST_SIZE,
-    // REQUEST_PERMISSION,
     REQUEST_LIST,
 } RequestType;
 
