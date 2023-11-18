@@ -1,5 +1,6 @@
 #include "logging.h"
 
+#include <signal.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <time.h>
@@ -77,11 +78,15 @@ void lprintf(char* format, ...) {
     vsprintf(logMessage, format, arguments);
     sprintf(Logger.buffer, "%s %s", timestamp, logMessage);
     Logger.size = 1;
-    pthread_mutex_unlock(&Logger.lock);
     pthread_cond_signal(&Logger.isFull);
+    pthread_mutex_unlock(&Logger.lock);
 }
 
 void* logRoutine(void* arg) {
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
     UNUSED(arg);
 
     while (true) {
@@ -99,8 +104,8 @@ void* logRoutine(void* arg) {
         if (!Logger.silent) fprintf(stderr, "%s\n", Logger.buffer);
         fflush(Logger.logFile);
         Logger.size = 0;
-        pthread_mutex_unlock(&Logger.lock);
         pthread_cond_broadcast(&Logger.isEmpty);
+        pthread_mutex_unlock(&Logger.lock);
     }
 
     printf("Cleaning up logger\n");

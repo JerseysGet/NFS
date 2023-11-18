@@ -34,9 +34,8 @@ ErrorCode initNM() {
     namingServer.ssAliveChecker = 0;
     namingServer.clientListener = 0;
     namingServer.clientAliveChecker = 0;
-    namingServer.isCleaningup = false;
+    namingServer.isCleaningUp = 0;
 
-    pthread_mutex_init(&namingServer.cleanupLock, NULL);
     if (initLogger("logs/naming_server/", false)) {
         eprintf("Could not create log file\n");
         exit(FAILURE);
@@ -89,7 +88,6 @@ destroy_escape_hatch:
 
 destroy_logger:
     destroyLogger();
-    pthread_mutex_destroy(&namingServer.cleanupLock);
 
     exit(FAILURE);
 }
@@ -116,24 +114,18 @@ void destroyNM() {
     
 
     pthread_mutex_destroy(&namingServer.connectedSSLock);
-    pthread_mutex_destroy(&namingServer.cleanupLock);
 
     destroyEscapeHatch();
     exit(namingServer.exitCode);
 }
 
 bool isCleaningUp() {
-    pthread_mutex_lock(&namingServer.cleanupLock);
-    bool ret = namingServer.isCleaningup;
-    pthread_mutex_unlock(&namingServer.cleanupLock);
-    return ret;
+    return namingServer.isCleaningUp;
 }
 
 void initiateCleanup(ErrorCode exitCode) {
-    pthread_mutex_lock(&namingServer.cleanupLock);
     namingServer.exitCode = exitCode;
-    namingServer.isCleaningup = true;
-    pthread_mutex_unlock(&namingServer.cleanupLock);
+    namingServer.isCleaningUp = true;
 }
 
 void signalSuccess() {

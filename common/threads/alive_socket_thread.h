@@ -7,7 +7,7 @@
 #include "../error/error.h"
 
 typedef struct AliveSocketThread {
-    pthread_t thread; // init this as 0
+    pthread_t thread;  // init this as 0
     int alivePort;
     int aliveSocket;
 } AliveSocketThread;

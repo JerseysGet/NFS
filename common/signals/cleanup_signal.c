@@ -24,6 +24,7 @@ void initEscapeHatch(void (*cleanup)()) {
     cleanupFunc = cleanup;
     jmpRet = setjmp(envBuffer);
     sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGPIPE, &(struct sigaction) {SIG_IGN}, NULL);
 
     if (jmpRet) {
         lprintf("Recived Signal: %s", strsignal(jmpRet));

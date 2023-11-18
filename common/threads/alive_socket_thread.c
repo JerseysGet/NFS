@@ -1,5 +1,7 @@
 #include "alive_socket_thread.h"
 
+#include <signal.h>
+
 #include "../networking/networking.h"
 #include "../print/logging.h"
 
@@ -17,13 +19,16 @@ ErrorCode initAliveSocketThread(AliveSocketThread* thread) {
 }
 
 void* aliveSocketThreadRoutine(void* arg) {
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
     AliveSocketThread* thread = (AliveSocketThread*)arg;
     while (!isCleaningUp()) {
         int clientfd;
         // lprintf("Alive_socket : Accpeting");
-        
+
         if (acceptClient(thread->aliveSocket, &clientfd)) {
-            eprintf("Could not acceptClient()\n");
             initiateCleanup(FAILURE);
             break;
         }

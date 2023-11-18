@@ -16,12 +16,6 @@ void addSS(ConnectedSS* connectedSS, SSInitRequest* req, int ssSockfd) {
     unlockTrie();
 }
 
-void signalCleanup() {
-    pthread_mutex_lock(&namingServer.cleanupLock);
-    namingServer.isCleaningup = true;
-    pthread_mutex_unlock(&namingServer.cleanupLock);
-}
-
 /* Terminates naming server in case of fatal errors */
 void* ssListenerRoutine(void* arg) {
     UNUSED(arg);
@@ -30,14 +24,14 @@ void* ssListenerRoutine(void* arg) {
         lprintf("SS_listener : Waiting for storage server...");
         int ssSockfd;
         if (acceptClient(namingServer.ssListenerSockfd, &ssSockfd)) {
-            signalCleanup();
+            initiateCleanup(SUCCESS);
             break;
         }
 
         lprintf("SS_listener : Storage server connected");
         SSInitRequest recievedReq;
         if (recieveSSRequest(ssSockfd, &recievedReq)) {
-            signalCleanup();
+            initiateCleanup(SUCCESS);
             break;
         }
 
@@ -54,7 +48,7 @@ void* ssListenerRoutine(void* arg) {
         if (connectedSS->count > MAX_STORAGE_SERVERS) {
             eprintf("Too many storage servers\n");
             pthread_mutex_unlock(&namingServer.connectedSSLock);
-            signalCleanup();
+            initiateCleanup(SUCCESS);
             break;
         }
         pthread_mutex_unlock(&namingServer.connectedSSLock);

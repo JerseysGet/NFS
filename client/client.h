@@ -2,6 +2,7 @@
 #define __CLIENT_H
 
 #include <pthread.h>
+#include <signal.h>
 
 #include "../common/error/error.h"
 #include "../common/networking/networking.h"
@@ -19,15 +20,13 @@ typedef struct Client {
     AliveSocketThread thread;
     // int aliveSockfd;   /* Passive socket used by NM to check if client is alive */
     // int aliveSockPort; /* Port for aliveSockfd */
-    
+
     /* Cleanup stuff */
-    pthread_mutex_t cleanupLock;
-    bool isCleaningup;
+    sig_atomic_t isCleaningup;
     ErrorCode exitCode;
 } Client;
 
 extern Client client;
-
 ErrorCode initClient();
 void destroyClient();
 ErrorCode connectToNM();
@@ -39,5 +38,5 @@ void destroyRequest(void* request);
 #define TIMEOUT_MILLIS 5000
 
 ErrorCode inputAndSendRequest();
-
+void signalSuccess();
 #endif

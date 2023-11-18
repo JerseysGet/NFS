@@ -9,7 +9,7 @@ COMMON_C_FLAGS += -Wlogical-op
 COMMON_C_FLAGS += -Wfloat-equal
 COMMON_C_FLAGS += -Wno-format-overflow
 
-DEBUG_FLAGS = -fsanitize=address,undefined,pointer-compare
+# DEBUG_FLAGS = -fsanitize=address,undefined,pointer-compare
 DEBUG_FLAGS += -ggdb3
 DEBUG_FLAGS += -ftrapv
 DEBUG_FLAGS += -fstack-protector

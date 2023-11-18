@@ -17,11 +17,12 @@ Client client;
 void signalSuccess();
 
 ErrorCode initClient() {
-    pthread_mutex_init(&client.cleanupLock, NULL);
+    client.isCleaningup = 0;
     client.exitCode = SUCCESS;
+    initEscapeHatch(signalSuccess);
     if (initLogger("logs/client/", false)) {
         eprintf("Could not create log file\n");
-        goto destroy_cleanup_lock;
+        return FAILURE;
     }
 
     if (startLogging()) {
@@ -29,17 +30,6 @@ ErrorCode initClient() {
         goto destroy_logger;
     }
 
-    initEscapeHatch(signalSuccess);
-
-    lprintf("Main : Creating Passive Socket for Client's Alive Socket");
-    // if (createPassiveSocket(&client.aliveSockfd, 0)) {
-    //     goto destroy_logging;
-    // }
-
-    // lprintf("Main : Getting port for Client's Alive Socket");
-    // if (getPort(client.aliveSockfd, &client.aliveSockPort)) {
-    //     goto destroy_alivesockfd;
-    // }
     lprintf("Main : Creating Alive Thread for Client's Alive Socket");
     if (initAliveSocketThread(&client.thread)) {
         goto destroy_logging;
@@ -78,46 +68,32 @@ destroy_logging:
 destroy_logger:
     destroyLogger();
 
-destroy_cleanup_lock:
-    pthread_mutex_destroy(&client.cleanupLock);
-
     return FAILURE;
 }
 
 bool isCleaningUp() {
-    // printf("trying to LOCK\n");
-    pthread_mutex_lock(&client.cleanupLock);
-    // printf("GOT LOCK\n");
-    bool ret = client.isCleaningup;
-    // printf("GOT RET\n");
-    pthread_mutex_unlock(&client.cleanupLock);
-    // printf("UNLOCKED\n");
-    return ret;
+    return client.isCleaningup;
 }
 
 void initiateCleanup(ErrorCode exitCode) {
-    // printf("trying to lock\n");
-    pthread_mutex_lock(&client.cleanupLock);
-    // printf("signal cleanup got lock\n");
+    client.isCleaningup = 1;
     client.exitCode = exitCode;
-    client.isCleaningup = true;
-    pthread_mutex_unlock(&client.cleanupLock);
-    // printf("signal cleanup unlocked\n");
 }
 
 void destroyClient() {
     lprintf("Main : Closing all sockfds in Client");
+    
+    shutdown(client.nmSockfd, SHUT_RDWR);
 
     shutdown(client.thread.aliveSocket, SHUT_RDWR);
+    JOIN_IF_CREATED(client.thread.thread, NULL);
 
     lprintf("Main : Alive_socket joined");
     closeSocket(client.passiveSockfd);
-    closeSocket(client.nmSockfd);
 
     endLogging();
     destroyLogger();
     JOIN_IF_CREATED(getLoggingThread(), NULL);
-    pthread_mutex_destroy(&client.cleanupLock);
     exit(client.exitCode);
 }
 
@@ -267,9 +243,6 @@ destroy_request:
 }
 
 void signalSuccess() {
-    // printf("signalSuccess : ");
-    initiateCleanup(SUCCESS);
-    usleep(2000000);
-    JOIN_IF_CREATED(client.thread.thread, NULL);
+    client.isCleaningup = 1;
     destroyClient();
 }

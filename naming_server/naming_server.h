@@ -1,6 +1,7 @@
 #ifndef __NAMING_SERVER_H
 #define __NAMING_SERVER_H
 
+#include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -42,14 +43,13 @@ typedef struct NamingServer {
     pthread_t ssListener;            /* Storage server listener thread */
     pthread_t ssAliveChecker;        /* Checks if the connected ss's are alive */
 
-    int clientListenerSockfd;             /* Socket for client listener passive port */
-    ConnectedClients connectedClients;    /* Stores connected clients, must be locked for synchronization */
-    pthread_t clientListener;             /* Client listener thread */
-    pthread_t clientAliveChecker;         /* Checks if connected clients are alive */
+    int clientListenerSockfd;          /* Socket for client listener passive port */
+    ConnectedClients connectedClients; /* Stores connected clients, must be locked for synchronization */
+    pthread_t clientListener;          /* Client listener thread */
+    pthread_t clientAliveChecker;      /* Checks if connected clients are alive */
 
     /* Cleanup stuff */
-    pthread_mutex_t cleanupLock;
-    bool isCleaningup;
+    sig_atomic_t isCleaningUp;
     ErrorCode exitCode;
 } NamingServer;
 

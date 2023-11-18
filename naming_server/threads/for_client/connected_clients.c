@@ -65,6 +65,7 @@ ErrorCode removeClient(ConnectedClients* connectedClients, ConnectedClient clien
     if (client == rear) connectedClients->rear = rear->prev;
     link(client->prev, client->next);
     killClientThread(client);
+    printf("killed!\n");
     pthread_join(client->thread, NULL);
     return SUCCESS;
 }

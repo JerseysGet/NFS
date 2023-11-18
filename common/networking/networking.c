@@ -97,7 +97,11 @@ ErrorCode socketSend(int sockfd, void* dataPtr, size_t bytes) {
 }
 
 ErrorCode socketRecieve(int sockfd, void* dataPtr, size_t bytes) {
-    if (recv(sockfd, dataPtr, bytes, 0) == -1) {
+    ssize_t bytesRead = -1;
+    
+    if ((bytesRead = recv(sockfd, dataPtr, bytes, 0)) == -1) {
+        return FAILURE;
+    } else if (bytesRead == 0) {
         return FAILURE;
     }
 

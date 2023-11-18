@@ -11,18 +11,14 @@ void* clientListenerRoutine(void* arg) {
         
         int clientSockfd;
         if (acceptClient(namingServer.clientListenerSockfd, &clientSockfd)) {
-            pthread_mutex_lock(&namingServer.cleanupLock);
-            namingServer.isCleaningup = true;
-            pthread_mutex_unlock(&namingServer.cleanupLock);
+            initiateCleanup(SUCCESS);
             break;
         }
 
         lprintf("Client_listener : Client connected");
         ClientInitRequest recievedReq;
         if (recieveClientRequest(clientSockfd, &recievedReq)) {
-            pthread_mutex_lock(&namingServer.cleanupLock);
-            namingServer.isCleaningup = true;
-            pthread_mutex_unlock(&namingServer.cleanupLock);
+            initiateCleanup(SUCCESS);
             break;
         }
 
