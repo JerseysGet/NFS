@@ -1,5 +1,4 @@
 #include "client.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -175,11 +174,10 @@ void* inputRequest(RequestType* requestType) {
             ((CreateRequest*)ret)->isDirectory = true;
             break;
         case 7:
-            // TODO !!
             *requestType = REQUEST_LIST;
-            // ret = calloc(1, sizeof());
-            // printf("Enter folder path to list: ");
-            // scanf("%s", path);
+            ret = calloc(1, sizeof(ListRequest));
+            printf("Enter folder path to list: ");
+            scanf("%s",((SizeRequest*)ret)->path);
             break;
         case 8:
             *requestType = REQUEST_METADATA;
@@ -200,6 +198,118 @@ void* inputRequest(RequestType* requestType) {
 
     return ret;
 }
+
+ErrorCode inputAndSendRequest() {
+    ErrorCode ret = SUCCESS;
+    RequestType type;
+    void* request = NULL;
+    while (request == NULL) request = inputRequest(&type);
+    lprintf("Main : sending RequestType..");
+    if ((ret = sendRequestType(&type, client.nmSockfd))) {
+        eprintf("Could not send request type\n");
+        goto destroy_request;
+    }
+
+    bool recievedAck;
+    RequestTypeAck requestTypeAck;
+    recieveRequestTypeAck(&requestTypeAck, client.nmSockfd, TIMEOUT_MILLIS, &recievedAck);
+
+    if (!recievedAck) {
+        eprintf("RequestTypeAck timed out\n");
+        ret = FAILURE;
+        goto destroy_request;
+    }
+    lprintf("Main : received RequestType ack");
+    if ((ret = sendRequest(type, request, client.nmSockfd))) {
+        eprintf("Could not send request\n");
+        goto destroy_request;
+    }
+    lprintf("Main : request sent");
+    if(isPrivileged(type)){
+        FeedbackAck fdAck;
+        if(recieveFeedbackAck(&fdAck,client.nmSockfd)) {
+            eprintf("Could not Receive feedbackAck from SS");
+            ret = FAILURE;
+            goto destroy_request;
+        }
+    }
+    else {
+        SSInfo ssinfo;
+        if (recieveSSInfo(&ssinfo, client.nmSockfd)) {
+            eprintf("Could not recieve ssinfo\n");
+            ret = FAILURE;
+            goto destroy_request;
+        }
+        lprintf("Main : recieved ssinfo ssClientPort = %d, ssPassivePort = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
+        int sockfd;
+        if(createActiveSocket(&sockfd)){
+            ret = FAILURE;
+            goto destroy_request;
+        }
+        lprintf("Main : Active Socket Created");
+        if(connectToServer(sockfd, ssinfo.ssClientPort)){
+            ret = FAILURE;
+            goto destroy_request;
+        }
+        lprintf("Main : Connected to SS");
+        if((ret = sendRequestType(&type,sockfd))){
+            goto destroy_request;
+        }
+        lprintf("Main : RequestType sent to SS");
+        bool RecAck;
+        RequestTypeAck typeAck;
+        recieveRequestTypeAck(&typeAck,sockfd,TIMEOUT_MILLIS,&RecAck);
+
+        if(!RecAck){
+            eprintf("RequestTypeAck timed out\n");
+            ret = FAILURE;
+            goto destroy_request;
+        }
+        lprintf("Main : RequestType Ack received");
+        
+        if((ret = sendRequest(type,request,sockfd))){
+            eprintf("Could not send Request to SS");
+            goto destroy_request;
+        }
+        lprintf("Main : Request sent");
+        switch(type) {
+            case REQUEST_WRITE:
+                break;
+            case REQUEST_READ:
+                if((ret = ReadResponseHandler(sockfd))){
+                    ret = FAILURE;
+                    goto destroy_request;
+                }
+                break;
+            case REQUEST_METADATA:
+                if((ret = MetaDataResponseHandler(sockfd))){
+                    ret = FAILURE;
+                    goto destroy_request;
+                }  
+                break;  
+            case REQUEST_LIST:
+                if((ret = ListResponseHandler(sockfd))){
+                    ret = FAILURE;
+                    goto destroy_request;
+                }
+                break;
+            default:   
+        }
+        FeedbackAck fdAck;
+        if(recieveFeedbackAck(&fdAck,client.nmSockfd)) {
+            eprintf("Could not receive Write feedbackAck");
+            ret = FAILURE;
+            goto destroy_request;
+        }
+        lprintf("Main : FeedbackAck Received for %s : %d",REQ_TYPE_TO_STRING[type],fdAck);
+    }
+    return SUCCESS;
+
+destroy_request:
+    destroyRequest(request);
+    return ret;
+}
+
 
 void destroyRequest(void* request) {
     free(request);

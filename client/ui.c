@@ -26,7 +26,7 @@ int main() {
             pthread_t thread;
             pthread_create(&thread, NULL, clientHandler, (void*)&clientSocket);
 
-            /
+            
             pthread_detach(thread);
         }
     }

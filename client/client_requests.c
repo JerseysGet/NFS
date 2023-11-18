@@ -1,134 +1,63 @@
 #include "client_requests.h"
 
 
-ErrorCode WriteResponseHandler(int sockfd){
-    FeedbackAck fdAck;
-    if(recieveFeedbackAck(&fdAck,client.nmSockfd)) {
-        eprintf("Could not receive Write feedbackAck");
+
+void printFileInfo(struct stat *fileStat) {
+    printf("Size: %ld bytes\n", fileStat->st_size);
+    printf("Permissions: ");
+    printf((S_ISDIR(fileStat->st_mode)) ? "d" : "-");
+    printf((fileStat->st_mode & S_IRUSR) ? "r" : "-");
+    printf((fileStat->st_mode & S_IWUSR) ? "w" : "-");
+    printf((fileStat->st_mode & S_IXUSR) ? "x" : "-");
+    printf((fileStat->st_mode & S_IRGRP) ? "r" : "-");
+    printf((fileStat->st_mode & S_IWGRP) ? "w" : "-");
+    printf((fileStat->st_mode & S_IXGRP) ? "x" : "-");
+    printf((fileStat->st_mode & S_IROTH) ? "r" : "-");
+    printf((fileStat->st_mode & S_IWOTH) ? "w" : "-");
+    printf((fileStat->st_mode & S_IXOTH) ? "x" : "-");
+    printf("\n");
+
+    printf("Last Access Time: %s\n", ctime(&fileStat->st_atime));
+    printf("Last Modification Time: %s\n", ctime(&fileStat->st_mtime));
+    printf("Last Status Change Time: %s\n", ctime(&fileStat->st_ctime));
+
+    // Add any additional information you want to print
+}
+
+ErrorCode ReadResponseHandler(int sockfd) {
+    ReadPacket packet;
+    if(receivePacket(&packet,sockfd)){
         return FAILURE;
     }
-    lprintf("Main : FeedbackAck Received for Write : %d",fdAck);
+    memset(packet.data,'\0',MAX_DATA_LENGTH);
+    while(packet.header != STOP_PKT){
+        printf("%s",packet.data);
+        if(receivePacket(&packet,sockfd))
+            return FAILURE;
+    }
     return SUCCESS;
-}
-ErrorCode ReadResponseHandler(int sockfd) {
-    // char buffer[1024];
-    // if(socketRecieve())
 }
 ErrorCode MetaDataResponseHandler(int sockfd) {
     struct stat st;
-    FeedbackAck fdAck;
     if(socketRecieve(sockfd,&st,sizeof(struct stat))){
         eprintf("Could not receive metadata");
         return FAILURE;
     }
     lprintf("Main : MetaData Received");
-    // print metadata
+    printFileInfo(&st);
     return SUCCESS;
 }
 ErrorCode ListResponseHandler(int sockfd) {
+    ListResponse Response;
+    if(socketRecieve(sockfd,&Response,sizeof(ListResponse))){
+        eprintf("Could not receive list");
+        return FAILURE;
+    }
+    lprintf("Main : List Received");
     
-}
-
-ErrorCode inputAndSendRequest() {
-    ErrorCode ret = SUCCESS;
-    RequestType type;
-    void* request = NULL;
-    while (request == NULL) request = inputRequest(&type);
-    lprintf("Main : sending RequestType..");
-    if ((ret = sendRequestType(&type, client.nmSockfd))) {
-        eprintf("Could not send request type\n");
-        goto destroy_request;
+    for(int i = 0 ; i < Response.list_cnt ; ++i ){
+        printf("%s\n",Response.list[i]);
     }
-
-    bool recievedAck;
-    RequestTypeAck requestTypeAck;
-    recieveRequestTypeAck(&requestTypeAck, client.nmSockfd, TIMEOUT_MILLIS, &recievedAck);
-
-    if (!recievedAck) {
-        eprintf("RequestTypeAck timed out\n");
-        ret = FAILURE;
-        goto destroy_request;
-    }
-    lprintf("Main : received RequestType ack");
-    if ((ret = sendRequest(type, request, client.nmSockfd))) {
-        eprintf("Could not send request\n");
-        goto destroy_request;
-    }
-    lprintf("Main : request sent");
-    if(isPrivileged(type)){
-        FeedbackAck fdAck;
-        if(recieveFeedbackAck(&fdAck,client.nmSockfd)) {
-            eprintf("Could not Receive feedbackAck from SS");
-            ret = FAILURE;
-            goto destroy_request;
-        }
-    }
-    else {
-        SSInfo ssinfo;
-        if (recieveSSInfo(&ssinfo, client.nmSockfd)) {
-            eprintf("Could not recieve ssinfo\n");
-            ret = FAILURE;
-            goto destroy_request;
-        }
-        lprintf("Main : recieved ssinfo ssClientPort = %d, ssPassivePort = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
-        int sockfd;
-        if(createActiveSocket(&sockfd)){
-            ret = FAILURE;
-            goto destroy_request;
-        }
-        lprintf("Main : Active Socket Created");
-        if(connectToServer(sockfd, ssinfo.ssClientPort)){
-            ret = FAILURE;
-            goto destroy_request;
-        }
-        lprintf("Main : Connected to SS");
-        if((ret = sendRequestType(&type,sockfd))){
-            goto destroy_request;
-        }
-        lprintf("Main : RequestType sent to SS");
-        bool RecAck;
-        RequestTypeAck typeAck;
-        if(recieveRequestTypeAck(&typeAck,sockfd,TIMEOUT_MILLIS,&RecAck));
-
-        if(!RecAck){
-            eprintf("RequestTypeAck timed out\n");
-            ret = FAILURE;
-            goto destroy_request;
-        }
-        
-        if((ret = sendRequest(type,request,sockfd))){
-            eprintf("Could not send Request to SS");
-            goto destroy_request;
-        }
-        
-        switch(type) {
-            case REQUEST_WRITE:
-                if((ret = WriteResponseHandler(sockfd))){
-                    ret = FAILURE;
-                    goto destroy_request;
-                }
-            case REQUEST_READ:
-                if((ret = ReadResponseHandler(sockfd))){
-                    ret = FAILURE;
-                    goto destroy_request;
-                }
-            case REQUEST_METADATA:
-                if((ret = MetaDataResponseHandler(sockfd))){
-                    ret = FAILURE;
-                    goto destroy_request;
-                }    
-            case REQUEST_LIST:
-                if((ret = ListResponseHandler(sockfd))){
-                    ret = FAILURE;
-                    goto destroy_request;
-                }
-            default:
-        }
-
-    }
-
-destroy_request:
-    destroyRequest(request);
-    return ret;
+    return SUCCESS;
 }
 

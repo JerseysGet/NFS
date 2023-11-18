@@ -138,11 +138,9 @@ ErrorCode ExecuteRequest(RequestType reqType,void* request,int clientfd){
              return ExecuteRead((ReadRequest*)request,clientfd);
         case REQUEST_METADATA:
              return ExecuteMD((MDRequest*)request,clientfd);
-        case REQUEST_COPY:
-        case REQUEST_CREATE:
-        case REQUEST_DELETE:
         case REQUEST_LIST:
-
+             return ExecuteList((ListRequest*)request,clientfd);
+        default:
     } 
     return FAILURE;
 }
