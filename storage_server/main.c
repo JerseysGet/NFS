@@ -6,14 +6,15 @@ int main() {
         destroySS(&ss);
         return FAILURE;
     }
+    ThreadForClient client;
+    initThreadForClient(&client);
 
     if (connectToNM(&ss)) {
         destroySS(&ss);
         return FAILURE;
     }
-
-    while (1) {}
-    
-
+     
+    startThreadForClient(&client);
+    pthread_join(client.thread,NULL);
     destroySS(&ss);
 }

@@ -16,6 +16,9 @@
 #include "requests/request_type.h"
 #include "requests/size.h"
 #include "requests/write.h"
+#include "requests/metadata.h"
+
+
 
 ErrorCode sendRequestType(RequestType* requestType, int sockfd);
 

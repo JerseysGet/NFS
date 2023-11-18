@@ -8,12 +8,12 @@ typedef enum RequestType {
     REQUEST_CREATE,
     REQUEST_DELETE,
     REQUEST_COPY,
-
     /* Non privileged requests*/
     REQUEST_READ,
     REQUEST_WRITE,
-    REQUEST_SIZE,
-    REQUEST_PERMISSION,
+    REQUEST_METADATA,
+    // REQUEST_SIZE,
+    // REQUEST_PERMISSION,
     REQUEST_LIST,
 } RequestType;
 

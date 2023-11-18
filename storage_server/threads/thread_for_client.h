@@ -3,6 +3,11 @@
 
 #include <pthread.h>
 
+#include "../../common/networking/requests.h"
+#include "../../common/networking/ack/feedback_ack.h"
+#include "../../common/networking/ack/request_type_ack.h"
+#include "../operations/operations.h"
+
 typedef struct ThreadForClient {
     pthread_t thread;
     int clientSockfd;   /* Passive socket for client to connect to SS */

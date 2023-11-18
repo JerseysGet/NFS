@@ -30,6 +30,7 @@ void* aliveSocketThreadRoutine(void* arg) {
 
         if (acceptClient(thread->aliveSocket, &clientfd)) {
             initiateCleanup(FAILURE);
+            eprintf("Could not acceptClient()\n");
             break;
         }
         // lprintf("Alive_socket : Closing");

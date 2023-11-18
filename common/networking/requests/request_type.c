@@ -6,8 +6,10 @@ const char* const REQ_TYPE_TO_STRING[] = {
     [REQUEST_COPY] = "REQUEST_COPY",
     [REQUEST_READ] = "REQUEST_READ",
     [REQUEST_WRITE] = "REQUEST_WRITE",
-    [REQUEST_SIZE] = "REQUEST_SIZE",
-    [REQUEST_PERMISSION] = "REQUEST_PERMISSION",
+    [REQUEST_METADATA] = "REQUEST_METADATA",
+    // [REQUEST_SIZE] = "REQUEST_SIZE",
+    // [REQUEST_PERMISSION] = "REQUEST_PERMISSION",
+
     [REQUEST_LIST] = "REQUEST_LIST"
 };
 
@@ -20,9 +22,10 @@ bool isPrivileged(RequestType type) {
         
         case REQUEST_READ:
         case REQUEST_WRITE:
-        case REQUEST_SIZE:
-        case REQUEST_PERMISSION:
+        case REQUEST_METADATA:
         case REQUEST_LIST:
+        // case REQUEST_SIZE:
+        // case REQUEST_PERMISSION:
             return false;
     }
 

@@ -125,6 +125,7 @@ void* inputRequest(RequestType* requestType) {
     printf("5. Create a file\n");
     printf("6. Create a folder\n");
     printf("7. List a folder\n");
+    printf("7. List a folder\n");
     printf("8. Get size\n");
     printf("9. Get permissions\n");
     scanf("%d", &option);
@@ -181,13 +182,13 @@ void* inputRequest(RequestType* requestType) {
             // scanf("%s", path);
             break;
         case 8:
-            *requestType = REQUEST_SIZE;
+            *requestType = REQUEST_METADATA;
             ret = calloc(1, sizeof(SizeRequest));
             printf("Enter file/folder path to get size: ");
             scanf("%s", ((SizeRequest*)ret)->path);
             break;
         case 9:
-            *requestType = REQUEST_PERMISSION;
+            *requestType = REQUEST_METADATA;
             ret = calloc(1, sizeof(PermRequest));
             printf("Enter file/folder path to get permissions: ");
             scanf("%s", ((SizeRequest*)ret)->path);
@@ -235,8 +236,27 @@ ErrorCode inputAndSendRequest() {
         eprintf("Could not recieve ssinfo\n");
         goto destroy_request;
     }
-
     lprintf("Main : recieved ssinfo ssClientPort = %d, ssPassivePort = %d", ssinfo.ssClientPort, ssinfo.ssPassivePort);
+    int sockfd;
+    createActiveSocket(&sockfd);
+    printf("Connected to SS\n");
+
+    connectToServer(sockfd,ssinfo.ssClientPort);
+    sendRequestType(&type,sockfd);
+    printf("Sent Requesttype\n");
+    
+    bool RecAck;
+    RequestTypeAck typeAck;
+    recieveRequestTypeAck(&typeAck,sockfd,TIMEOUT_MILLIS,&RecAck);
+    printf("received Requesttype Ack:%d\n",RecAck);
+
+    sendRequest(type,request,sockfd);
+    printf("sent Request\n");
+
+    FeedbackAck fdAck;
+    recieveFeedbackAck(&fdAck,sockfd);
+    printf("received feedback :%d\n",fdAck.errorCode);
+
 destroy_request:
     destroyRequest(request);
     return ret;

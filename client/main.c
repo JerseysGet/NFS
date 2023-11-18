@@ -18,7 +18,6 @@ int main() {
     while(!isCleaningUp()){
         // printf("is cleaing up : ");
     }
-
     destroyClient();
 }
 

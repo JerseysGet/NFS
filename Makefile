@@ -34,6 +34,7 @@ COMMON_OBJECTS += common/networking/requests/permission.o
 COMMON_OBJECTS += common/networking/requests/read.o
 COMMON_OBJECTS += common/networking/requests/size.o
 COMMON_OBJECTS += common/networking/requests/write.o
+COMMON_OBJECTS += common/networking/requests/metadata.o
 COMMON_OBJECTS += common/threads/alive_socket_thread.o
 
 NM_OBJECTS = naming_server/naming_server.o
@@ -46,6 +47,9 @@ NM_OBJECTS += naming_server/threads/for_client/connected_clients.o
 NM_OBJECTS += naming_server/threads/for_client/client_handler_thread.o
 
 SS_OBJECTS = storage_server/storage_server.c
+SS_OBJECTS += storage_server/operations/np_operations.c
+SS_OBJECTS += storage_server/operations/p_operations.c
+SS_OBJECTS += storage_server/threads/thread_for_client.c
 
 CLIENT_OBJECTS = client/client.c
 

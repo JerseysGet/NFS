@@ -30,6 +30,32 @@ ErrorCode GetDirectoryInfo(char* path,struct stat *info);
 ErrorCode IsDirectory(char* path);
 ErrorCode GetDirectorySize(char* path,int* size);
 
+
+ErrorCode ExecuteWrite(WriteRequest* Req);
+ErrorCode ExecuteRead(ReadRequest* Req,int clientfd);
+ErrorCode ExecuteMD(MDRequest* Req,int clientfd);
+ErrorCode ExecuteRequest(RequestType reqType,void* request,int clientfd);
+
+
+
+void CleanPacket(CopyPacket* packet);
+ErrorCode send_INFOPKT(int sockfd,char* path,bool IsDir);
+
+ErrorCode send_STOPPKT(int sockfd);
+
+ErrorCode send_STARTPKT(int sockfd);
+
+ErrorCode send_DATAPKT(int sockfd,char* data,int size);
+
+ErrorCode ReceivePacket(int sockfd,CopyPacket* packet);
+
+ErrorCode CopyDirectory_Send(char* src,char* dst,int sockfd);
+
+ErrorCode SendfileData(char* filename,int sockfd);
+
+ErrorCode ReceiveFileData(char* filename,int sockfd);
+// inside indst path
+ErrorCode CopyDirectory_Recieve(char* src,char* dst,int sockfd);
 // ErrorCode getFileSize(char* path, int* size);
 // ErrorCode getDirectorySize(char* path, int* size);
 
